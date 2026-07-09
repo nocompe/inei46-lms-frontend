@@ -243,6 +243,58 @@ export const api = {
 
   matriculas: () => request<{ matriculas: MatriculaListItem[] }>('/matriculas'),
 
+  // Descarga la constancia de matrícula en PDF (generada en el backend vía Browserless).
+  descargarConstancia: async (id: number) => {
+    const res = await fetch(`${BASE}/matriculas/${id}/constancia`, {
+      headers: { Accept: 'application/pdf' },
+    })
+    if (!res.ok) throw new Error(`No se pudo generar la constancia (HTTP ${res.status})`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `constancia-matricula-${id}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
+
+  // Reporte 02 — Boleta de notas del estudiante en PDF.
+  descargarBoleta: async (estudianteId: number) => {
+    const res = await fetch(`${BASE}/estudiantes/${estudianteId}/boleta`, {
+      headers: { Accept: 'application/pdf' },
+    })
+    if (!res.ok) throw new Error(`No se pudo generar la boleta (HTTP ${res.status})`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `boleta-notas-${estudianteId}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
+
+  // Reporte 03 — Nómina de estudiantes matriculados por grado y sección en PDF.
+  descargarReporteMatriculados: async (grado: string, seccion: string) => {
+    const qs = new URLSearchParams({ grado, seccion }).toString()
+    const res = await fetch(`${BASE}/reportes/matriculados?${qs}`, {
+      headers: { Accept: 'application/pdf' },
+    })
+    if (!res.ok) throw new Error(`No se pudo generar el reporte (HTTP ${res.status})`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `matriculados-${grado}-${seccion}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
+
   // CRUD extensions
   actualizarCurso: (id: number, data: Partial<NuevoCurso & { estado: boolean }>) =>
     request<{ curso: unknown }>(`/cursos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -297,10 +349,12 @@ export const api = {
     request<{ horarios: HorarioItem[] }>(`/me/horario?user_id=${userId}`),
 
   // Observaciones
-  observaciones: (params?: { estudiante_id?: number; docente_id?: number }) => {
+  observaciones: (params?: { estudiante_id?: number; docente_id?: number; tipo?: string; prioridad?: string }) => {
     const qs = new URLSearchParams()
     if (params?.estudiante_id) qs.set('estudiante_id', String(params.estudiante_id))
     if (params?.docente_id) qs.set('docente_id', String(params.docente_id))
+    if (params?.tipo) qs.set('tipo', params.tipo)
+    if (params?.prioridad) qs.set('prioridad', params.prioridad)
     const q = qs.toString()
     return request<{ observaciones: ObservacionDTO[] }>(`/observaciones${q ? '?' + q : ''}`)
   },
@@ -315,10 +369,12 @@ export const api = {
     request<{ observacion: unknown }>('/observaciones', { method: 'POST', body: JSON.stringify(data) }),
 
   // Citaciones
-  citaciones: (params?: { padre_id?: number; docente_id?: number }) => {
+  citaciones: (params?: { padre_id?: number; docente_id?: number; estado?: string; motivo?: string }) => {
     const qs = new URLSearchParams()
     if (params?.padre_id) qs.set('padre_id', String(params.padre_id))
     if (params?.docente_id) qs.set('docente_id', String(params.docente_id))
+    if (params?.estado) qs.set('estado', params.estado)
+    if (params?.motivo) qs.set('motivo', params.motivo)
     const q = qs.toString()
     return request<{ citaciones: CitacionDTO[] }>(`/citaciones${q ? '?' + q : ''}`)
   },
@@ -330,6 +386,16 @@ export const api = {
     fecha: string
     hora: string
   }) => request<{ citacion: unknown }>('/citaciones', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Pagos
+  pagos: (params?: { estudiante_id?: number; estado?: string; concepto?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.estudiante_id) qs.set('estudiante_id', String(params.estudiante_id))
+    if (params?.estado) qs.set('estado', params.estado)
+    if (params?.concepto) qs.set('concepto', params.concepto)
+    const q = qs.toString()
+    return request<{ pagos: PagoDTO[] }>(`/pagos${q ? '?' + q : ''}`)
+  },
 
   // Mensajes
   bandejaMensajes: (userId: number) =>
@@ -578,6 +644,7 @@ export type NotificacionDTO = {
 
 export type PagoDTO = {
   id: number
+  id_estudiante: number
   concepto: string
   monto: number
   moneda?: string

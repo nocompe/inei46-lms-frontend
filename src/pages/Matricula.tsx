@@ -16,6 +16,7 @@ import {
   BookOpen,
   Sparkles,
   AlertCircle,
+  FileText,
 } from 'lucide-react'
 import Pill from '../components/Pill'
 import {
@@ -38,6 +39,18 @@ export default function Matricula() {
   const [success, setSuccess] = useState<string | null>(null)
   const [recientes, setRecientes] = useState<MatriculaListItem[]>([])
   const [editandoMatricula, setEditandoMatricula] = useState<MatriculaListItem | null>(null)
+  const [descargandoId, setDescargandoId] = useState<number | null>(null)
+
+  const descargarConstancia = async (id: number) => {
+    setDescargandoId(id)
+    try {
+      await api.descargarConstancia(id)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'No se pudo descargar la constancia')
+    } finally {
+      setDescargandoId(null)
+    }
+  }
 
   const cargarRecientes = () => {
     api.matriculas().then((r) => setRecientes(r.matriculas)).catch(() => setRecientes([]))
@@ -301,6 +314,12 @@ export default function Matricula() {
                 </Pill>
                 <div className="flex items-center gap-1.5 text-gray-400">
                   <button className="hover:text-[#1A1A1A]" title="Ver"><Eye size={14} /></button>
+                  <button
+                    onClick={() => descargarConstancia(m.id)}
+                    disabled={descargandoId === m.id}
+                    className="inline-flex items-center gap-1 rounded-md bg-inei-50 px-2 py-1 text-[10px] font-semibold text-inei-600 hover:bg-inei-100 disabled:opacity-50"
+                    title="Descargar constancia PDF"
+                  ><FileText size={13} /> {descargandoId === m.id ? 'Generando…' : 'PDF'}</button>
                   <button onClick={() => setEditandoMatricula(m)} className="hover:text-[#1A1A1A]" title="Editar"><Pencil size={14} /></button>
                   <button
                     onClick={async () => {
