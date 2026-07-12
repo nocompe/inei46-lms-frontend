@@ -78,4 +78,25 @@ proyecto-integrador/
 
 ## Conexión con el backend
 
-La URL de la API se configura en `src/lib/api.ts`. Para desarrollo apunta a `http://localhost:8000/api`. En producción cambiar al dominio donde esté desplegado el backend.
+La URL de la API se configura en `src/lib/api.ts` (variable `VITE_API_URL`, por defecto `http://localhost:8000/api`). En producción cambiar al dominio donde esté desplegado el backend.
+
+### Autenticación por token (Bearer)
+
+- `POST /api/login` devuelve `{ user, token }`. El token se guarda junto al usuario bajo la clave `inei46.auth`:
+  - **localStorage** si se marcó "Recordarme" en el login; **sessionStorage** si no.
+- Todas las requests (JSON, multipart y descargas PDF) envían `Authorization: Bearer <token>` automáticamente.
+- Si el backend responde **401**, el frontend limpia la sesión y redirige a `/login`.
+- Rutas protegidas por rol con `src/components/ProtectedRoute.tsx`: sin sesión → `/login`; rol incorrecto → home de su rol. Ruta inexistente → página 404 (`src/pages/NotFound.tsx`).
+
+### Pagos (webhook firmado)
+
+`POST /api/pagos/{id}/iniciar-transaccion` devuelve además `firma`, que el frontend reenvía en el body de `POST /api/pagos/webhook` al simular la confirmación (ver `PadrePagos.tsx`).
+
+## Avances recientes (jul 2026)
+
+- Auth con token Bearer + manejo global de 401 + "Recordarme" (local vs session storage).
+- Guard de rutas por rol (`ProtectedRoute`) y página 404.
+- Botones conectados: descargar boletín (padre), subir contenido (docente), "Ver todas"/detalle de matrícula (admin), filtros funcionales de cursos (periodo/grado/estado).
+- Dashboards con datos reales: promedio del estudiante, próxima clase derivada del horario, siguiente pago pendiente del hijo.
+- Constructor de preguntas: captura de `respuesta_correcta` (opción múltiple y respuesta corta).
+- URLs de archivos centralizadas con `fileUrl()` (sin `localhost:8000` hardcodeado en páginas).

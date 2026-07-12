@@ -1,14 +1,45 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Bell, Trophy, FileText, CalendarCheck, BookOpen, AlarmClock, MapPin, Book } from 'lucide-react'
-import { api, loadAuth, type MiCurso, type MiResumen, type MiTareaDTO } from '../lib/api'
+import { api, loadAuth, type CalificacionDTO, type HorarioItem, type MiCurso, type MiResumen, type MiTareaDTO } from '../lib/api'
 
 const COLORES_CURSO = ['#C8102E', '#1A1A1A', '#C8102E', '#1A1A1A']
 
+const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
+
+function capitalizar(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+// Busca el siguiente bloque de clase según el día y hora actuales.
+function proximaClaseDe(horarios: HorarioItem[]): { item: HorarioItem; etiqueta: string } | null {
+  if (horarios.length === 0) return null
+  const ahora = new Date()
+  const hoyIdx = ahora.getDay()
+  const horaActual = `${ahora.getHours().toString().padStart(2, '0')}:${ahora.getMinutes().toString().padStart(2, '0')}`
+  for (let offset = 0; offset < 7; offset++) {
+    const dia = DIAS_SEMANA[(hoyIdx + offset) % 7]
+    const bloques = horarios
+      .filter((h) => h.dia_semana.toLowerCase() === dia)
+      .filter((h) => offset > 0 || h.hora_inicio.slice(0, 5) >= horaActual)
+      .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
+    if (bloques[0]) {
+      const b = bloques[0]
+      const cuando = offset === 0 ? 'Hoy' : offset === 1 ? 'Mañana' : capitalizar(dia)
+      return { item: b, etiqueta: `${cuando} · ${b.hora_inicio.slice(0, 5)} - ${b.hora_fin.slice(0, 5)}` }
+    }
+  }
+  return null
+}
+
 export default function VistaEstudiante() {
   const auth = loadAuth()
+  const navigate = useNavigate()
   const [cursos, setCursos] = useState<MiCurso[]>([])
   const [tareas, setTareas] = useState<MiTareaDTO[]>([])
   const [resumen, setResumen] = useState<MiResumen | null>(null)
+  const [calificaciones, setCalificaciones] = useState<CalificacionDTO[]>([])
+  const [horario, setHorario] = useState<HorarioItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -19,11 +50,15 @@ export default function VistaEstudiante() {
       api.miCursos(auth.id),
       api.miTareas(auth.id),
       api.miResumen(auth.id),
+      api.calificacionesPorEstudiante(auth.id).catch(() => ({ calificaciones: [] as CalificacionDTO[] })),
+      api.miHorario(auth.id).catch(() => ({ horarios: [] as HorarioItem[] })),
     ])
-      .then(([c, t, r]) => {
+      .then(([c, t, r, cal, h]) => {
         setCursos(c.cursos)
         setTareas(t.tareas)
         setResumen(r)
+        setCalificaciones(cal.calificaciones)
+        setHorario(h.horarios)
       })
       .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar datos'))
       .finally(() => setLoading(false))
@@ -39,7 +74,13 @@ export default function VistaEstudiante() {
 
   const primerNombre = auth.nombres.split(' ')[0]
   const tareasPendientes = tareas.filter((t) => new Date(t.fecha_limite) >= new Date())
-  const proximaClase = cursos[0]
+
+  const conNota = calificaciones.filter((c) => c.puntaje != null)
+  const promedio = conNota.length > 0
+    ? conNota.reduce((a, b) => a + (b.puntaje ?? 0), 0) / conNota.length
+    : null
+
+  const proxima = proximaClaseDe(horario)
 
   return (
     <div className="flex flex-col gap-4">
@@ -48,7 +89,11 @@ export default function VistaEstudiante() {
           <h1 className="text-[22px] font-bold text-[#1A1A1A]">Hola, {primerNombre}</h1>
           <p className="text-xs text-gray-600">Bienvenido(a) de vuelta a tu aula virtual</p>
         </div>
-        <button className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]">
+        <button
+          onClick={() => navigate('/estudiante/notificaciones')}
+          title="Ver notificaciones"
+          className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]"
+        >
           <Bell size={16} />
         </button>
       </div>
@@ -65,7 +110,7 @@ export default function VistaEstudiante() {
           bg="#FEE2E2"
           iconColor="#C8102E"
           label="Promedio actual"
-          value={loading ? '—' : '15.3 / 20'}
+          value={loading ? '—' : promedio != null ? `${promedio.toFixed(1)} / 20` : '—'}
         />
         <Stat
           icon={FileText}
@@ -170,10 +215,16 @@ export default function VistaEstudiante() {
 
         <div className="bg-[#1A1A1A] rounded-2xl p-5 flex flex-col gap-3.5 text-white">
           <span className="text-[11px] font-semibold text-white/80">Próxima clase</span>
-          <h3 className="text-[22px] font-bold">{proximaClase?.nombre ?? '—'}</h3>
-          <InfoRow icon={AlarmClock} text="Hoy · 10:30 am - 12:00 pm" />
-          <InfoRow icon={MapPin} text="Aula 304 · Pabellón B" />
-          <InfoRow icon={Book} text={proximaClase?.descripcion ?? 'Sin descripción registrada'} />
+          <h3 className="text-[22px] font-bold">{proxima?.item.curso ?? 'Sin clases próximas'}</h3>
+          {proxima ? (
+            <>
+              <InfoRow icon={AlarmClock} text={proxima.etiqueta} />
+              <InfoRow icon={MapPin} text={proxima.item.aula ?? 'Aula por definir'} />
+              <InfoRow icon={Book} text={proxima.item.docente} />
+            </>
+          ) : (
+            <InfoRow icon={AlarmClock} text="No hay bloques de horario registrados" />
+          )}
 
           <div className="h-px bg-white/15" />
           <span className="text-[10px] font-semibold text-white/60">DATOS DEL ESTUDIANTE</span>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Upload,
   Plus,
@@ -15,6 +15,7 @@ import { api, loadAuth, type MiCurso, type MiResumen, type MiTareaDTO } from '..
 
 export default function VistaProfesor() {
   const auth = loadAuth()
+  const navigate = useNavigate()
   const [cursos, setCursos] = useState<MiCurso[]>([])
   const [tareas, setTareas] = useState<MiTareaDTO[]>([])
   const [resumen, setResumen] = useState<MiResumen | null>(null)
@@ -66,7 +67,10 @@ export default function VistaProfesor() {
           </p>
         </div>
         <div className="flex gap-2.5">
-          <button className="h-10 px-3.5 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold inline-flex items-center gap-1.5">
+          <button
+            onClick={() => navigate('/docente/contenido')}
+            className="h-10 px-3.5 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold inline-flex items-center gap-1.5"
+          >
             <Upload size={14} /> Subir contenido
           </button>
           <Link

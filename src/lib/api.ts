@@ -1,9 +1,37 @@
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
 
+// Convierte una ruta relativa del backend (p. ej. /storage/archivo.pdf) en URL absoluta.
+export const fileUrl = (path: string) =>
+  path.startsWith('http') ? path : new URL(BASE).origin + path
+
 type ApiError = { message: string; errors?: Record<string, string[]> }
 
+function authHeaders(): Record<string, string> {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+function handleUnauthorized(): never {
+  clearAuth()
+  window.location.href = '/login'
+  throw new Error('Sesión expirada. Inicia sesión nuevamente.')
+}
+
+// fetch con Authorization Bearer y manejo centralizado de 401.
+async function authFetch(url: string, init?: RequestInit): Promise<Response> {
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      ...authHeaders(),
+      ...(init?.headers ?? {}),
+    },
+  })
+  if (res.status === 401) handleUnauthorized()
+  return res
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await authFetch(`${BASE}${path}`, {
     ...init,
     headers: {
       'Accept': 'application/json',
@@ -100,7 +128,7 @@ export type NuevaTarea = {
 
 export const api = {
   login: (email: string, password: string) =>
-    request<{ user: AuthUser }>('/login', {
+    request<{ user: AuthUser; token: string }>('/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
@@ -179,7 +207,7 @@ export const api = {
     }),
 
   entregarConArchivo: async (formData: FormData) => {
-    const res = await fetch(`${BASE}/entregas`, {
+    const res = await authFetch(`${BASE}/entregas`, {
       method: 'POST',
       body: formData,
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -245,7 +273,7 @@ export const api = {
 
   // Descarga la constancia de matrícula en PDF (generada en el backend vía Browserless).
   descargarConstancia: async (id: number) => {
-    const res = await fetch(`${BASE}/matriculas/${id}/constancia`, {
+    const res = await authFetch(`${BASE}/matriculas/${id}/constancia`, {
       headers: { Accept: 'application/pdf' },
     })
     if (!res.ok) throw new Error(`No se pudo generar la constancia (HTTP ${res.status})`)
@@ -262,7 +290,7 @@ export const api = {
 
   // Reporte 02 — Boleta de notas del estudiante en PDF.
   descargarBoleta: async (estudianteId: number) => {
-    const res = await fetch(`${BASE}/estudiantes/${estudianteId}/boleta`, {
+    const res = await authFetch(`${BASE}/estudiantes/${estudianteId}/boleta`, {
       headers: { Accept: 'application/pdf' },
     })
     if (!res.ok) throw new Error(`No se pudo generar la boleta (HTTP ${res.status})`)
@@ -280,7 +308,7 @@ export const api = {
   // Reporte 03 — Nómina de estudiantes matriculados por grado y sección en PDF.
   descargarReporteMatriculados: async (grado: string, seccion: string) => {
     const qs = new URLSearchParams({ grado, seccion }).toString()
-    const res = await fetch(`${BASE}/reportes/matriculados?${qs}`, {
+    const res = await authFetch(`${BASE}/reportes/matriculados?${qs}`, {
       headers: { Accept: 'application/pdf' },
     })
     if (!res.ok) throw new Error(`No se pudo generar el reporte (HTTP ${res.status})`)
@@ -289,6 +317,24 @@ export const api = {
     const a = document.createElement('a')
     a.href = url
     a.download = `matriculados-${grado}-${seccion}.pdf`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+  },
+
+  // Exportar listados filtrados a PDF (Observaciones, Citaciones, Pagos).
+  exportarListadoPdf: async (recurso: 'observaciones' | 'citaciones' | 'pagos', filtros: Record<string, string>) => {
+    const qs = new URLSearchParams(Object.fromEntries(Object.entries(filtros).filter(([, v]) => v))).toString()
+    const res = await authFetch(`${BASE}/${recurso}/pdf${qs ? '?' + qs : ''}`, {
+      headers: { Accept: 'application/pdf' },
+    })
+    if (!res.ok) throw new Error(`No se pudo exportar el PDF (HTTP ${res.status})`)
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${recurso}.pdf`
     document.body.appendChild(a)
     a.click()
     a.remove()
@@ -314,7 +360,7 @@ export const api = {
   actualizarContenidoConArchivo: async (id: number, fd: FormData) => {
     // Laravel acepta multipart con _method=PUT en una request POST
     fd.append('_method', 'PUT')
-    const res = await fetch(`${BASE}/contenidos/${id}`, {
+    const res = await authFetch(`${BASE}/contenidos/${id}`, {
       method: 'POST',
       body: fd,
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -434,13 +480,13 @@ export const api = {
   anularPago: (id: number) =>
     request<{ pago: unknown }>(`/pagos/${id}/anular`, { method: 'PATCH' }),
   iniciarTransaccionPago: (id: number, data: { gateway: Gateway; return_url?: string }) =>
-    request<{ transaction: TransaccionPago }>(`/pagos/${id}/iniciar-transaccion`, {
+    request<{ transaction: TransaccionPago; firma: string }>(`/pagos/${id}/iniciar-transaccion`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
   consultarTransaccion: (transactionId: string) =>
     request<{ transaction: TransaccionPago }>(`/pagos/transaccion/${transactionId}`),
-  confirmarWebhookPago: (data: { transaction_id: string; gateway: Gateway; status: 'approved' | 'rejected' | 'pending'; gateway_payload?: Record<string, unknown> }) =>
+  confirmarWebhookPago: (data: { transaction_id: string; gateway: Gateway; status: 'approved' | 'rejected' | 'pending'; firma: string; gateway_payload?: Record<string, unknown> }) =>
     request<{ message: string; pago: unknown }>('/pagos/webhook', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -459,7 +505,7 @@ export const api = {
   verSolicitudMatricula: (id: number) =>
     request<{ solicitud: SolicitudMatriculaDTO }>(`/solicitudes-matricula/${id}`),
   crearSolicitudMatricula: async (fd: FormData) => {
-    const res = await fetch(`${BASE}/solicitudes-matricula`, {
+    const res = await authFetch(`${BASE}/solicitudes-matricula`, {
       method: 'POST',
       body: fd,
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -474,7 +520,7 @@ export const api = {
     return body as { solicitud: SolicitudMatriculaDTO }
   },
   agregarDocumentosSolicitud: async (id: number, fd: FormData) => {
-    const res = await fetch(`${BASE}/solicitudes-matricula/${id}/documentos`, {
+    const res = await authFetch(`${BASE}/solicitudes-matricula/${id}/documentos`, {
       method: 'POST',
       body: fd,
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -556,7 +602,7 @@ export const api = {
 
   // Upload de contenido (multipart)
   subirContenido: async (formData: FormData) => {
-    const res = await fetch(`${BASE}/contenidos`, {
+    const res = await authFetch(`${BASE}/contenidos`, {
       method: 'POST',
       body: formData,
       headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -872,6 +918,7 @@ export type PreguntaInput = {
   tipo: 'opcion_multiple' | 'respuesta_corta' | 'desarrollo'
   puntaje?: number
   opciones?: string[]
+  respuesta_correcta?: string | null
 }
 
 export type PerfilUser = {
@@ -983,6 +1030,13 @@ export type MiTareaDTO = {
   entregas?: number
   entregas_pendientes?: number
   curso: { id?: number; codigo: string; nombre: string; docente: string }
+  mi_entrega?: {
+    id: number
+    estado: string
+    fecha_entrega: string
+    puntaje?: number | null
+    calificacion?: { puntaje: number; observacion?: string | null } | null
+  } | null
 }
 
 export type MiResumen = {
@@ -1028,17 +1082,54 @@ export type GuardarAsistenciaPayload = {
 
 const STORAGE_KEY = 'inei46.auth'
 
-export function saveAuth(user: AuthUser) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+type StoredAuth = { user: AuthUser; token: string | null }
+
+function readStored(): { data: StoredAuth; storage: Storage } | null {
+  for (const storage of [localStorage, sessionStorage]) {
+    const raw = storage.getItem(STORAGE_KEY)
+    if (!raw) continue
+    try {
+      const parsed = JSON.parse(raw) as unknown
+      if (parsed && typeof parsed === 'object') {
+        if ('user' in parsed) {
+          const p = parsed as { user: AuthUser; token?: string | null }
+          return { data: { user: p.user, token: p.token ?? null }, storage }
+        }
+        // Shape legado: se guardaba el usuario directamente (sin token).
+        return { data: { user: parsed as AuthUser, token: null }, storage }
+      }
+      storage.removeItem(STORAGE_KEY)
+    } catch {
+      storage.removeItem(STORAGE_KEY)
+    }
+  }
+  return null
+}
+
+/**
+ * Guarda la sesión. Si `remember` es true usa localStorage; si es false, sessionStorage.
+ * Si se omiten `token`/`remember` se conservan los valores actuales (útil al actualizar el perfil).
+ */
+export function saveAuth(user: AuthUser, token?: string, remember?: boolean) {
+  const prev = readStored()
+  const finalToken = token ?? prev?.data.token ?? null
+  const useLocal = remember ?? (prev ? prev.storage === localStorage : true)
+  clearAuth()
+  const target = useLocal ? localStorage : sessionStorage
+  target.setItem(STORAGE_KEY, JSON.stringify({ user, token: finalToken }))
 }
 
 export function loadAuth(): AuthUser | null {
-  const raw = localStorage.getItem(STORAGE_KEY)
-  return raw ? (JSON.parse(raw) as AuthUser) : null
+  return readStored()?.data.user ?? null
+}
+
+export function getToken(): string | null {
+  return readStored()?.data.token ?? null
 }
 
 export function clearAuth() {
   localStorage.removeItem(STORAGE_KEY)
+  sessionStorage.removeItem(STORAGE_KEY)
 }
 
 export function homeForRole(rol: AuthUser['rol']): string {
@@ -1047,6 +1138,6 @@ export function homeForRole(rol: AuthUser['rol']): string {
     case 'estudiante': return '/estudiante'
     case 'padre': return '/padre'
     case 'admin':
-    default: return '/cursos'
+    default: return '/dashboard'
   }
 }

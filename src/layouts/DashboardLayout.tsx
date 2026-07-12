@@ -7,8 +7,6 @@ import {
   ClipboardList,
   FileText,
   ChartColumn,
-  Bell,
-  Search,
   HeartHandshake,
   ClipboardCheck,
   CalendarDays,
@@ -48,19 +46,6 @@ export default function DashboardLayout() {
               <span className="text-gray-400">Inicio</span>
               <span className="text-gray-400">/</span>
               <span className="font-semibold text-[#1A1A1A]">{breadcrumb}</span>
-            </div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-white border border-border-soft">
-                <Search size={14} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar curso, docente, código..."
-                  className="flex-1 text-xs bg-transparent placeholder:text-gray-400 focus:outline-none"
-                />
-              </div>
-              <button className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]">
-                <Bell size={16} />
-              </button>
             </div>
           </div>
           <Outlet />

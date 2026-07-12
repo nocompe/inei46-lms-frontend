@@ -76,7 +76,7 @@ export default function AdminDocentes() {
                 <span className="text-[10px] text-gray-400">Docente</span>
               </div>
               <Link
-                to="/cursos"
+                to={`/cursos?docente=${encodeURIComponent(`${d.nombres} ${d.apellidos}`)}`}
                 className="text-[11px] font-semibold text-inei-600 hover:text-inei-700 inline-flex items-center gap-1"
               >
                 <BookOpen size={12} /> Ver cursos

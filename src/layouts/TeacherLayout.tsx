@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import {
   BookOpen,
   GraduationCap,
@@ -7,10 +7,10 @@ import {
   CalendarCheck,
   MessageSquare,
   Bell,
-  Search,
   Library,
 } from 'lucide-react'
 import Sidebar, { type NavItem } from '../components/Sidebar'
+import { loadAuth } from '../lib/api'
 
 const teacherNav: NavItem[] = [
   { to: '/docente', icon: BookOpen, label: 'Mis cursos' },
@@ -23,6 +23,9 @@ const teacherNav: NavItem[] = [
 ]
 
 export default function TeacherLayout() {
+  const navigate = useNavigate()
+  const auth = loadAuth()
+
   return (
     <div className="flex h-screen w-screen bg-surface-muted overflow-hidden">
       <Sidebar
@@ -35,24 +38,22 @@ export default function TeacherLayout() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-gray-400">Portal docente</span>
-              <span className="text-gray-400">/</span>
-              <span className="text-gray-400">Mis cursos</span>
-              <span className="text-gray-400">/</span>
-              <span className="font-semibold text-[#1A1A1A]">Matemáticas I · 3ro A</span>
+              {auth && (
+                <>
+                  <span className="text-gray-400">/</span>
+                  <span className="font-semibold text-[#1A1A1A]">
+                    {auth.nombres} {auth.apellidos}
+                  </span>
+                </>
+              )}
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-2 h-9 w-60 px-3 rounded-lg bg-white border border-border-soft">
-                <Search size={14} className="text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Buscar estudiante o tarea..."
-                  className="flex-1 text-xs bg-transparent placeholder:text-gray-400 focus:outline-none"
-                />
-              </div>
-              <button className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]">
-                <Bell size={16} />
-              </button>
-            </div>
+            <button
+              onClick={() => navigate('/docente/comunicados')}
+              title="Ver comunicados"
+              className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]"
+            >
+              <Bell size={16} />
+            </button>
           </div>
           <Outlet />
         </div>

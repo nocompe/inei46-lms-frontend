@@ -186,6 +186,7 @@ function ResumenCard({ icon: Icon, bg, iconColor, label, value }: { icon: typeof
 function CheckoutModal({ pago, onClose, onCompleted }: { pago: PagoDTO; onClose: () => void; onCompleted: () => void }) {
   const [gateway, setGateway] = useState<Gateway>('culqi')
   const [transaccion, setTransaccion] = useState<TransaccionPago | null>(null)
+  const [firma, setFirma] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [simulando, setSimulando] = useState(false)
@@ -194,8 +195,9 @@ function CheckoutModal({ pago, onClose, onCompleted }: { pago: PagoDTO; onClose:
     setLoading(true)
     setErr(null)
     try {
-      const { transaction } = await api.iniciarTransaccionPago(pago.id, { gateway })
+      const { transaction, firma: firmaTx } = await api.iniciarTransaccionPago(pago.id, { gateway })
       setTransaccion(transaction)
+      setFirma(firmaTx)
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'No se pudo iniciar la transacción')
     } finally {
@@ -206,13 +208,14 @@ function CheckoutModal({ pago, onClose, onCompleted }: { pago: PagoDTO; onClose:
   // En producción este paso lo dispara el webhook real de la pasarela.
   // Aquí lo simulamos manualmente para que el flujo se pueda demostrar end-to-end.
   const simularConfirmacion = async (status: 'approved' | 'rejected') => {
-    if (!transaccion) return
+    if (!transaccion || !firma) return
     setSimulando(true)
     try {
       await api.confirmarWebhookPago({
         transaction_id: transaccion.id,
         gateway: transaccion.gateway,
         status,
+        firma,
         gateway_payload: { simulated: true, timestamp: new Date().toISOString() },
       })
       onCompleted()

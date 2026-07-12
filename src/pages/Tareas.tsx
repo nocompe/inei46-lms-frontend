@@ -153,7 +153,7 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
   const [err, setErr] = useState<string | null>(null)
 
   const addPregunta = () => {
-    setPreguntas((s) => [...s, { enunciado: '', tipo: 'opcion_multiple', puntaje: 1, opciones: ['', '', '', ''] }])
+    setPreguntas((s) => [...s, { enunciado: '', tipo: 'opcion_multiple', puntaje: 1, opciones: ['', '', '', ''], respuesta_correcta: null }])
   }
   const removePregunta = (idx: number) => {
     setPreguntas((s) => s.filter((_, i) => i !== idx))
@@ -369,7 +369,7 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
                 <select
                   className="input bg-white"
                   value={p.tipo}
-                  onChange={(e) => updatePregunta(idx, { tipo: e.target.value as PreguntaTipo })}
+                  onChange={(e) => updatePregunta(idx, { tipo: e.target.value as PreguntaTipo, respuesta_correcta: null })}
                 >
                   <option value="opcion_multiple">{tipoPreguntaLabel.opcion_multiple}</option>
                   <option value="respuesta_corta">{tipoPreguntaLabel.respuesta_corta}</option>
@@ -386,20 +386,52 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
                 />
               </div>
               {p.tipo === 'opcion_multiple' && (
-                <div className="grid grid-cols-2 gap-1.5 pl-3">
-                  {(p.opciones ?? ['', '', '', '']).map((op, oi) => (
-                    <input
-                      key={oi}
-                      className="h-8 px-2 text-xs rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-inei-600"
-                      placeholder={`Opción ${String.fromCharCode(65 + oi)}`}
-                      value={op}
-                      onChange={(e) => {
-                        const ops = [...(p.opciones ?? ['', '', '', ''])]
-                        ops[oi] = e.target.value
-                        updatePregunta(idx, { opciones: ops })
-                      }}
-                    />
-                  ))}
+                <>
+                  <div className="grid grid-cols-2 gap-1.5 pl-3">
+                    {(p.opciones ?? ['', '', '', '']).map((op, oi) => (
+                      <input
+                        key={oi}
+                        className="h-8 px-2 text-xs rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-inei-600"
+                        placeholder={`Opción ${String.fromCharCode(65 + oi)}`}
+                        value={op}
+                        onChange={(e) => {
+                          const anterior = (p.opciones ?? ['', '', '', ''])[oi]
+                          const ops = [...(p.opciones ?? ['', '', '', ''])]
+                          ops[oi] = e.target.value
+                          updatePregunta(idx, {
+                            opciones: ops,
+                            // Si la opción editada era la respuesta correcta, sigue el cambio.
+                            respuesta_correcta: p.respuesta_correcta === anterior ? e.target.value : p.respuesta_correcta,
+                          })
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex flex-col gap-1 pl-3">
+                    <label className="text-[10px] font-semibold text-gray-500">Respuesta correcta</label>
+                    <select
+                      className="input bg-white"
+                      value={p.respuesta_correcta ?? ''}
+                      onChange={(e) => updatePregunta(idx, { respuesta_correcta: e.target.value || null })}
+                    >
+                      <option value="">— Selecciona la opción correcta —</option>
+                      {(p.opciones ?? []).filter((op) => op.trim()).map((op, oi) => (
+                        <option key={oi} value={op}>{op}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+              {p.tipo === 'respuesta_corta' && (
+                <div className="flex flex-col gap-1 pl-3">
+                  <label className="text-[10px] font-semibold text-gray-500">Respuesta correcta</label>
+                  <input
+                    className="input bg-white"
+                    placeholder="Texto exacto de la respuesta esperada"
+                    maxLength={255}
+                    value={p.respuesta_correcta ?? ''}
+                    onChange={(e) => updatePregunta(idx, { respuesta_correcta: e.target.value || null })}
+                  />
                 </div>
               )}
             </div>

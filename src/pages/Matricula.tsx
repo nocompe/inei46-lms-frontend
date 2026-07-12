@@ -39,6 +39,8 @@ export default function Matricula() {
   const [success, setSuccess] = useState<string | null>(null)
   const [recientes, setRecientes] = useState<MatriculaListItem[]>([])
   const [editandoMatricula, setEditandoMatricula] = useState<MatriculaListItem | null>(null)
+  const [viendoMatricula, setViendoMatricula] = useState<MatriculaListItem | null>(null)
+  const [verTodas, setVerTodas] = useState(false)
   const [descargandoId, setDescargandoId] = useState<number | null>(null)
 
   const descargarConstancia = async (id: number) => {
@@ -269,8 +271,11 @@ export default function Matricula() {
             <h2 className="text-sm font-bold text-[#1A1A1A]">Matrículas recientes</h2>
             <p className="text-[11px] text-gray-400">Últimos estudiantes matriculados</p>
           </div>
-          <button className="h-8 px-3 rounded-lg bg-surface-muted text-[11px] text-gray-600 hover:bg-border-softer">
-            Ver todas
+          <button
+            onClick={() => setVerTodas((v) => !v)}
+            className="h-8 px-3 rounded-lg bg-surface-muted text-[11px] text-gray-600 hover:bg-border-softer"
+          >
+            {verTodas ? 'Ver menos' : `Ver todas (${total})`}
           </button>
         </div>
         <div>
@@ -288,7 +293,7 @@ export default function Matricula() {
               Sin matrículas registradas todavía.
             </div>
           )}
-          {recientes.slice(0, 6).map((m, i) => (
+          {(verTodas ? recientes : recientes.slice(0, 6)).map((m, i) => (
             <div key={m.id}>
               <div className="grid grid-cols-[2fr_1fr_1fr_120px_100px_100px] gap-3 min-h-12 px-3 items-center">
                 <div className="flex items-center gap-2.5">
@@ -313,7 +318,7 @@ export default function Matricula() {
                   {m.estado === 'activa' ? 'Activa' : m.estado}
                 </Pill>
                 <div className="flex items-center gap-1.5 text-gray-400">
-                  <button className="hover:text-[#1A1A1A]" title="Ver"><Eye size={14} /></button>
+                  <button onClick={() => setViendoMatricula(m)} className="hover:text-[#1A1A1A]" title="Ver"><Eye size={14} /></button>
                   <button
                     onClick={() => descargarConstancia(m.id)}
                     disabled={descargandoId === m.id}
@@ -336,7 +341,7 @@ export default function Matricula() {
                   ><Trash2 size={14} /></button>
                 </div>
               </div>
-              {i < Math.min(recientes.length, 6) - 1 && <div className="h-px bg-border-softer" />}
+              {i < (verTodas ? recientes.length : Math.min(recientes.length, 6)) - 1 && <div className="h-px bg-border-softer" />}
             </div>
           ))}
         </div>
@@ -350,6 +355,10 @@ export default function Matricula() {
         />
       )}
 
+      {viendoMatricula && (
+        <VerMatriculaModal matricula={viendoMatricula} onClose={() => setViendoMatricula(null)} />
+      )}
+
       <div className="bg-white rounded-2xl py-4 px-5 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Summary label="Estudiante" value={estudiante ? `${estudiante.nombres} ${estudiante.apellidos}` : '—'} />
@@ -358,7 +367,7 @@ export default function Matricula() {
           <span className="h-8 w-px bg-border-soft" />
           <Summary label="Cursos a inscribir" value={`${horarioGrado?.cursos.length ?? 0} cursos`} />
           <span className="h-8 w-px bg-border-soft" />
-          <Summary label="Costo de matrícula" value="S/. 250.00" highlight />
+          <Summary label="Costo de matrícula" value="S/. 250.00 (referencial)" highlight />
         </div>
         <div className="flex items-center gap-2.5">
           <button
@@ -433,6 +442,55 @@ function Summary({
       <span className={`text-[13px] font-semibold ${highlight ? 'text-inei-600' : 'text-[#1A1A1A]'}`}>
         {value}
       </span>
+    </div>
+  )
+}
+
+function VerMatriculaModal({ matricula, onClose }: { matricula: MatriculaListItem; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-lg font-bold text-[#1A1A1A]">Detalle de matrícula</h2>
+            <span className="text-[11px] text-gray-400">Registro N.º {matricula.id}</span>
+          </div>
+          <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>
+        </div>
+
+        <div className="flex flex-col gap-2.5">
+          <DetalleRow label="Estudiante" value={`${matricula.estudiante.nombres} ${matricula.estudiante.apellidos}`} />
+          <DetalleRow label="DNI" value={matricula.estudiante.dni} />
+          <DetalleRow label="Grado · Sección" value={`${matricula.estudiante.grado ?? '—'} - ${matricula.estudiante.seccion ?? '—'}`} />
+          <DetalleRow label="Curso" value={`${matricula.curso.codigo} · ${matricula.curso.nombre}`} />
+          <DetalleRow label="Fecha de matrícula" value={new Date(matricula.fecha_matricula).toLocaleDateString('es-PE')} />
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-400">Estado</span>
+            <Pill variant={matricula.estado === 'activa' ? 'success' : 'muted'}>
+              {matricula.estado === 'activa' ? 'Activa' : matricula.estado}
+            </Pill>
+          </div>
+        </div>
+
+        <div className="flex justify-end pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 px-4 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-sm font-semibold"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function DetalleRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between text-xs">
+      <span className="text-gray-400">{label}</span>
+      <span className="font-semibold text-[#1A1A1A] text-right">{value}</span>
     </div>
   )
 }

@@ -28,8 +28,8 @@ export default function EstudianteTareas() {
 
   if (!auth) return <div className="p-8 text-sm text-gray-600">Sesión no encontrada.</div>
 
-  const pendientes = tareas.filter((t) => !(t as any).mi_entrega)
-  const entregadas = tareas.filter((t) => (t as any).mi_entrega)
+  const pendientes = tareas.filter((t) => !t.mi_entrega)
+  const entregadas = tareas.filter((t) => t.mi_entrega)
 
   return (
     <div className="flex flex-col gap-5">
@@ -109,7 +109,7 @@ function Empty({ children }: { children: React.ReactNode }) {
 }
 
 function TareaCard({ tarea, onEntregar }: { tarea: MiTareaDTO; onEntregar?: () => void }) {
-  const entrega = (tarea as any).mi_entrega as MiTareaDTO extends { mi_entrega: infer T } ? T : any
+  const entrega = tarea.mi_entrega
   const calificacion = entrega?.calificacion
   return (
     <div className="bg-white rounded-xl p-4 flex flex-col gap-3">

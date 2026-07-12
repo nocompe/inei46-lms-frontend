@@ -17,6 +17,7 @@ import {
 } from 'lucide-react'
 import {
   api,
+  fileUrl,
   loadAuth,
   type ContenidoCursoDTO,
   type ContenidoItem,
@@ -731,7 +732,7 @@ function ContenidoEditModal({
             <Paperclip size={14} className="text-[#15803D]" />
             <div className="flex flex-col leading-tight flex-1 min-w-0">
               <span className="text-[11px] font-semibold text-[#15803D]">Archivo subido actualmente</span>
-              <a href={`http://localhost:8000${contenido.url}`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#15803D] underline truncate">
+              <a href={fileUrl(contenido.url ?? '')} target="_blank" rel="noopener noreferrer" className="text-[10px] text-[#15803D] underline truncate">
                 {contenido.url}
               </a>
             </div>

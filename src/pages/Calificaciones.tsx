@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ClipboardCheck, Save, FileText } from 'lucide-react'
 import Pill from '../components/Pill'
-import { api, loadAuth, type EntregaItem, type EntregasTareaDTO, type MiTareaDTO } from '../lib/api'
+import { api, fileUrl, loadAuth, type EntregaItem, type EntregasTareaDTO, type MiTareaDTO } from '../lib/api'
 
 type RowState = { puntaje: string; observacion: string; saving: boolean; saved: boolean }
 
@@ -165,7 +165,7 @@ export default function Calificaciones() {
                     </span>
                     {e.archivo_url && (
                       <a
-                        href={e.archivo_url.startsWith('http') ? e.archivo_url : `http://localhost:8000${e.archivo_url}`}
+                        href={fileUrl(e.archivo_url)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[10px] font-semibold text-inei-600 hover:text-inei-700 inline-flex items-center gap-1 w-fit"

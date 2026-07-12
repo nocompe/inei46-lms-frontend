@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BarChart3, BookOpen, GraduationCap, ClipboardList, FileText, School } from 'lucide-react'
+import { BarChart3, BookOpen, GraduationCap, ClipboardList, FileText, School, Download } from 'lucide-react'
 import { api, type CursoDTO, type TareaDTO, type UsuarioBreve, type ObservacionDTO, type CitacionDTO, type PagoDTO } from '../lib/api'
 
 export default function AdminReportes() {
@@ -22,6 +22,36 @@ export default function AdminReportes() {
   const [obsFilter, setObsFilter] = useState({ estudianteId: '', docenteId: '', tipo: '', prioridad: '' })
   const [citFilter, setCitFilter] = useState({ padreId: '', docenteId: '', estado: '', motivo: '' })
   const [pagosFilter, setPagosFilter] = useState({ estudianteId: '', estado: '', concepto: '' })
+  const [exportando, setExportando] = useState<string | null>(null)
+
+  const exportarObservaciones = async () => {
+    setExportando('obs')
+    try {
+      await api.exportarListadoPdf('observaciones', {
+        estudiante_id: obsFilter.estudianteId, docente_id: obsFilter.docenteId,
+        tipo: obsFilter.tipo, prioridad: obsFilter.prioridad,
+      })
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error') } finally { setExportando(null) }
+  }
+
+  const exportarCitaciones = async () => {
+    setExportando('cit')
+    try {
+      await api.exportarListadoPdf('citaciones', {
+        padre_id: citFilter.padreId, docente_id: citFilter.docenteId,
+        estado: citFilter.estado, motivo: citFilter.motivo,
+      })
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error') } finally { setExportando(null) }
+  }
+
+  const exportarPagos = async () => {
+    setExportando('pagos')
+    try {
+      await api.exportarListadoPdf('pagos', {
+        estudiante_id: pagosFilter.estudianteId, estado: pagosFilter.estado, concepto: pagosFilter.concepto,
+      })
+    } catch (e) { alert(e instanceof Error ? e.message : 'Error') } finally { setExportando(null) }
+  }
 
   const generarBoleta = async () => {
     if (!boletaEst) return
@@ -203,14 +233,25 @@ export default function AdminReportes() {
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Observaciones</h2>
                   <p className="text-[11px] text-gray-400">Filtra por estudiante, docente, tipo o prioridad</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={loadObservaciones}
-                  disabled={obsLoading}
-                  className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
-                >
-                  {obsLoading ? 'Cargando…' : 'Aplicar filtro'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={exportarObservaciones}
+                    disabled={exportando === 'obs'}
+                    title="Exportar a PDF con los filtros aplicados"
+                    className="h-9 rounded-lg border border-inei-600 text-inei-600 hover:bg-inei-50 disabled:opacity-60 text-xs font-semibold px-3 inline-flex items-center gap-1.5"
+                  >
+                    <Download size={13} /> {exportando === 'obs' ? 'Generando…' : 'PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={loadObservaciones}
+                    disabled={obsLoading}
+                    className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
+                  >
+                    {obsLoading ? 'Cargando…' : 'Aplicar filtro'}
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <select className="input text-sm" value={obsFilter.estudianteId} onChange={(e) => setObsFilter((p) => ({ ...p, estudianteId: e.target.value }))}>
@@ -275,14 +316,25 @@ export default function AdminReportes() {
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Citaciones</h2>
                   <p className="text-[11px] text-gray-400">Filtra por padre, docente, estado o motivo</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={loadCitaciones}
-                  disabled={citLoading}
-                  className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
-                >
-                  {citLoading ? 'Cargando…' : 'Aplicar filtro'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={exportarCitaciones}
+                    disabled={exportando === 'cit'}
+                    title="Exportar a PDF con los filtros aplicados"
+                    className="h-9 rounded-lg border border-inei-600 text-inei-600 hover:bg-inei-50 disabled:opacity-60 text-xs font-semibold px-3 inline-flex items-center gap-1.5"
+                  >
+                    <Download size={13} /> {exportando === 'cit' ? 'Generando…' : 'PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={loadCitaciones}
+                    disabled={citLoading}
+                    className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
+                  >
+                    {citLoading ? 'Cargando…' : 'Aplicar filtro'}
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <select className="input text-sm" value={citFilter.padreId} onChange={(e) => setCitFilter((p) => ({ ...p, padreId: e.target.value }))}>
@@ -342,14 +394,25 @@ export default function AdminReportes() {
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Pagos</h2>
                   <p className="text-[11px] text-gray-400">Filtra por estudiante, estado o concepto</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={loadPagos}
-                  disabled={pagosLoading}
-                  className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
-                >
-                  {pagosLoading ? 'Cargando…' : 'Aplicar filtro'}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={exportarPagos}
+                    disabled={exportando === 'pagos'}
+                    title="Exportar a PDF con los filtros aplicados"
+                    className="h-9 rounded-lg border border-inei-600 text-inei-600 hover:bg-inei-50 disabled:opacity-60 text-xs font-semibold px-3 inline-flex items-center gap-1.5"
+                  >
+                    <Download size={13} /> {exportando === 'pagos' ? 'Generando…' : 'PDF'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={loadPagos}
+                    disabled={pagosLoading}
+                    className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-xs font-semibold px-3"
+                  >
+                    {pagosLoading ? 'Cargando…' : 'Aplicar filtro'}
+                  </button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <select className="input text-sm" value={pagosFilter.estudianteId} onChange={(e) => setPagosFilter((p) => ({ ...p, estudianteId: e.target.value }))}>

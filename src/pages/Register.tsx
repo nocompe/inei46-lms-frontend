@@ -157,9 +157,9 @@ export default function Register() {
           />
           <span>
             Acepto los{' '}
-            <a href="#" className="font-semibold text-inei-600">
+            <span className="font-semibold text-inei-600">
               términos y política de privacidad
-            </a>
+            </span>
           </span>
         </label>
 

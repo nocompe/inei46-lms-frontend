@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Bell,
   Users,
@@ -15,15 +16,19 @@ import {
   loadAuth,
   type CalificacionDTO,
   type HijoResumen,
+  type PagoDTO,
 } from '../lib/api'
 
 export default function VistaPadre() {
   const auth = loadAuth()
+  const navigate = useNavigate()
   const [hijos, setHijos] = useState<HijoResumen[]>([])
   const [hijoSel, setHijoSel] = useState<HijoResumen | null>(null)
   const [calificaciones, setCalificaciones] = useState<CalificacionDTO[]>([])
+  const [pagos, setPagos] = useState<PagoDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [descargandoBoleta, setDescargandoBoleta] = useState(false)
 
   useEffect(() => {
     if (!auth) return
@@ -42,7 +47,27 @@ export default function VistaPadre() {
     api.calificacionesPorEstudiante(hijoSel.id)
       .then((r) => setCalificaciones(r.calificaciones))
       .catch(() => setCalificaciones([]))
+    api.pagos({ estudiante_id: hijoSel.id })
+      .then((r) => setPagos(r.pagos))
+      .catch(() => setPagos([]))
   }, [hijoSel?.id])
+
+  const descargarBoletin = async () => {
+    if (!hijoSel) return
+    setDescargandoBoleta(true)
+    try {
+      await api.descargarBoleta(hijoSel.id)
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'No se pudo generar el boletín')
+    } finally {
+      setDescargandoBoleta(false)
+    }
+  }
+
+  // Siguiente pago pendiente (o vencido) más próximo a vencer.
+  const siguientePago = pagos
+    .filter((p) => p.estado === 'pendiente' || p.estado === 'vencido')
+    .sort((a, b) => (a.fecha_vencimiento ?? '').localeCompare(b.fecha_vencimiento ?? ''))[0] ?? null
 
   if (!auth) return <div className="p-8 text-sm text-gray-600">Sesión no encontrada.</div>
 
@@ -57,7 +82,11 @@ export default function VistaPadre() {
             Sigue el desempeño académico de tus hijos en tiempo real
           </p>
         </div>
-        <button className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]">
+        <button
+          onClick={() => navigate('/padre/comunicados')}
+          title="Ver comunicados"
+          className="h-9 w-9 grid place-items-center rounded-lg bg-white border border-border-soft text-gray-600 hover:text-[#1A1A1A]"
+        >
           <Bell size={16} />
         </button>
       </div>
@@ -123,8 +152,12 @@ export default function VistaPadre() {
                   <ChevronDown size={12} className="text-gray-400" />
                 </button>
               )}
-              <button className="h-10 px-3.5 rounded-lg bg-[#1A1A1A] text-white text-xs font-semibold inline-flex items-center gap-1.5">
-                <Download size={14} /> Descargar boletín
+              <button
+                onClick={descargarBoletin}
+                disabled={descargandoBoleta}
+                className="h-10 px-3.5 rounded-lg bg-[#1A1A1A] disabled:opacity-60 text-white text-xs font-semibold inline-flex items-center gap-1.5"
+              >
+                <Download size={14} /> {descargandoBoleta ? 'Generando…' : 'Descargar boletín'}
               </button>
             </div>
           </div>
@@ -147,9 +180,13 @@ export default function VistaPadre() {
               footerColor={hijoSel.observaciones > 0 ? '#92400E' : undefined}
             />
             <StatF icon={CreditCard} bg="rgba(255,255,255,0.15)" iconColor="#FFFFFF"
-              label="Pensión del mes"
-              value="S/. 350"
-              footer="Pagado · Vence: 05 may 2026"
+              label={siguientePago ? siguientePago.concepto : 'Pagos'}
+              value={siguientePago ? `S/. ${Number(siguientePago.monto).toFixed(2)}` : 'Al día'}
+              footer={
+                siguientePago
+                  ? `${siguientePago.estado === 'vencido' ? 'Vencido' : 'Pendiente'}${siguientePago.fecha_vencimiento ? ` · Vence: ${formatFecha(siguientePago.fecha_vencimiento)}` : ''}`
+                  : 'Sin pagos pendientes'
+              }
               inverse
             />
           </div>

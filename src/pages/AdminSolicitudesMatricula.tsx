@@ -5,7 +5,7 @@ import {
 } from 'lucide-react'
 import Pill from '../components/Pill'
 import {
-  api, loadAuth,
+  api, fileUrl, loadAuth,
   type DocumentoTipo, type SolicitudEstado, type SolicitudMatriculaDTO,
 } from '../lib/api'
 
@@ -290,7 +290,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
             {solicitud.documentos.map((d) => (
               <a
                 key={d.id}
-                href={d.archivo_url.startsWith('http') ? d.archivo_url : `http://localhost:8000${d.archivo_url}`}
+                href={fileUrl(d.archivo_url)}
                 target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-2 p-2 rounded-md border border-border-softer hover:border-inei-600 hover:bg-inei-50"
               >

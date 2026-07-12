@@ -11,6 +11,7 @@ export default function Login() {
   const [remember, setRemember] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [infoPassword, setInfoPassword] = useState(false)
   const navigate = useNavigate()
 
   return (
@@ -21,8 +22,8 @@ export default function Login() {
           setLoading(true)
           setError(null)
           try {
-            const { user } = await api.login(email, password)
-            saveAuth(user)
+            const { user, token } = await api.login(email, password)
+            saveAuth(user, token, remember)
             navigate(homeForRole(user.rol))
           } catch (err) {
             setError(err instanceof Error ? err.message : 'No se pudo iniciar sesión')
@@ -95,10 +96,20 @@ export default function Login() {
             />
             Recordarme
           </label>
-          <a href="#" className="text-xs font-semibold text-inei-600 hover:text-inei-700">
+          <button
+            type="button"
+            onClick={() => setInfoPassword((v) => !v)}
+            className="text-xs font-semibold text-inei-600 hover:text-inei-700"
+          >
             Olvidé mi contraseña
-          </a>
+          </button>
         </div>
+
+        {infoPassword && (
+          <div className="rounded-lg bg-[#DBEAFE] border border-[#93C5FD] px-3 py-2 text-xs text-[#1E40AF]">
+            Contacta al administrador del colegio para restablecer tu contraseña.
+          </div>
+        )}
 
         <button
           type="submit"

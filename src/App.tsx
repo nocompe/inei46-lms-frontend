@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import NotFound from './pages/NotFound'
+import ProtectedRoute from './components/ProtectedRoute'
 import DashboardLayout from './layouts/DashboardLayout'
 import TeacherLayout from './layouts/TeacherLayout'
 import StudentLayout from './layouts/StudentLayout'
@@ -60,7 +62,7 @@ export default function App() {
         <Route path="/registro" element={<Register />} />
 
         {/* Admin */}
-        <Route element={<DashboardLayout />}>
+        <Route element={<ProtectedRoute roles={['admin']}><DashboardLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<AdminDashboard />} />
           <Route path="/cursos" element={<Cursos />} />
           <Route path="/estudiantes" element={<AdminEstudiantes />} />
@@ -77,7 +79,7 @@ export default function App() {
         </Route>
 
         {/* Docente */}
-        <Route element={<TeacherLayout />}>
+        <Route element={<ProtectedRoute roles={['docente']}><TeacherLayout /></ProtectedRoute>}>
           <Route path="/docente" element={<VistaProfesor />} />
           <Route path="/docente/estudiantes" element={<DocenteEstudiantes />} />
           <Route path="/docente/contenido" element={<DocenteContenido />} />
@@ -89,7 +91,7 @@ export default function App() {
         </Route>
 
         {/* Estudiante */}
-        <Route element={<StudentLayout />}>
+        <Route element={<ProtectedRoute roles={['estudiante']}><StudentLayout /></ProtectedRoute>}>
           <Route path="/estudiante" element={<VistaEstudiante />} />
           <Route path="/estudiante/cursos" element={<EstudianteMisCursos />} />
           <Route path="/estudiante/cursos/:id" element={<EstudianteCursoDetalle />} />
@@ -102,7 +104,7 @@ export default function App() {
         </Route>
 
         {/* Padre */}
-        <Route element={<ParentLayout />}>
+        <Route element={<ProtectedRoute roles={['padre']}><ParentLayout /></ProtectedRoute>}>
           <Route path="/padre" element={<VistaPadre />} />
           <Route path="/padre/calificaciones" element={<PadreCalificaciones />} />
           <Route path="/padre/asistencia" element={<PadreAsistencia />} />
@@ -113,7 +115,7 @@ export default function App() {
           <Route path="/padre/perfil" element={<Perfil />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )

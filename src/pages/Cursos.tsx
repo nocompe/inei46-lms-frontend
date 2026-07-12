@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import {
   BookOpen,
   CircleCheck,
@@ -34,6 +35,18 @@ export default function Cursos() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<CursoDTO | null>(null)
   const [verCurso, setVerCurso] = useState<CursoDTO | null>(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [filtroPeriodo, setFiltroPeriodo] = useState('')
+  const [filtroGrado, setFiltroGrado] = useState('')
+  const [filtroEstado, setFiltroEstado] = useState('')
+  // Filtro por docente: se puede llegar preseleccionado desde "Ver cursos" en Docentes (?docente=Nombre)
+  const [filtroDocente, setFiltroDocente] = useState(searchParams.get('docente') ?? '')
+
+  const cambiarFiltroDocente = (v: string) => {
+    setFiltroDocente(v)
+    // Mantiene la URL sincronizada (y limpia el param al quitar el filtro)
+    setSearchParams(v ? { docente: v } : {}, { replace: true })
+  }
 
   const load = () => {
     api.cursos()
@@ -43,7 +56,41 @@ export default function Cursos() {
 
   useEffect(() => { load() }, [])
 
-  const cursos = data?.cursos ?? []
+  const todos = data?.cursos ?? []
+  const periodos = [...new Set(todos.map((c) => c.periodo))].sort()
+  const grados = [...new Set(todos.map((c) => c.grado))].sort()
+  const docentes = [...new Set(todos.map((c) => c.docente).filter(Boolean))].sort()
+  const cursos = todos.filter((c) =>
+    (!filtroPeriodo || c.periodo === filtroPeriodo) &&
+    (!filtroGrado || c.grado === filtroGrado) &&
+    (!filtroEstado || (filtroEstado === 'activo' ? c.estado : !c.estado)) &&
+    (!filtroDocente || c.docente === filtroDocente)
+  )
+
+  // Agrupa por materia (nombre base sin el grado) y ordena grado → sección.
+  const hayFiltro = Boolean(filtroPeriodo || filtroGrado || filtroEstado || filtroDocente)
+  const [abiertos, setAbiertos] = useState<Set<string>>(new Set())
+  const toggleGrupo = (m: string) =>
+    setAbiertos((prev) => {
+      const next = new Set(prev)
+      if (next.has(m)) next.delete(m); else next.add(m)
+      return next
+    })
+  const ordenGrado = (g: string) => parseInt(g) || 0
+  const materiaDe = (c: CursoDTO) => c.nombre.replace(/\s+(1ro|2do|3ro|4to|5to)\s*$/i, '').trim()
+  const grupos = useMemo(() => {
+    const map = new Map<string, CursoDTO[]>()
+    for (const c of cursos) {
+      const m = materiaDe(c)
+      if (!map.has(m)) map.set(m, [])
+      map.get(m)!.push(c)
+    }
+    for (const lista of map.values()) {
+      lista.sort((a, b) => ordenGrado(a.grado) - ordenGrado(b.grado) || a.seccion.localeCompare(b.seccion))
+    }
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, filtroPeriodo, filtroGrado, filtroEstado, filtroDocente])
   const totales = data?.totales
 
   return (
@@ -83,9 +130,33 @@ export default function Cursos() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold text-[#1A1A1A]">Listado de cursos</h2>
           <div className="flex gap-2">
-            <FilterChip label="Periodo: 2026 - I" />
-            <FilterChip label="Grado: Todos" />
-            <FilterChip label="Estado: Todos" />
+            <FilterSelect
+              prefix="Docente"
+              value={filtroDocente}
+              onChange={cambiarFiltroDocente}
+              options={docentes.map((d) => ({ value: d, label: d }))}
+            />
+            <FilterSelect
+              prefix="Periodo"
+              value={filtroPeriodo}
+              onChange={setFiltroPeriodo}
+              options={periodos.map((p) => ({ value: p, label: p }))}
+            />
+            <FilterSelect
+              prefix="Grado"
+              value={filtroGrado}
+              onChange={setFiltroGrado}
+              options={grados.map((g) => ({ value: g, label: g }))}
+            />
+            <FilterSelect
+              prefix="Estado"
+              value={filtroEstado}
+              onChange={setFiltroEstado}
+              options={[
+                { value: 'activo', label: 'Activo' },
+                { value: 'inactivo', label: 'Inactivo' },
+              ]}
+            />
           </div>
         </div>
 
@@ -102,32 +173,64 @@ export default function Cursos() {
           {!data && (
             <div className="py-10 text-center text-xs text-gray-400">Cargando cursos...</div>
           )}
-          {cursos.map((c, i) => (
-            <div key={c.codigo}>
-              <div className="grid grid-cols-[1fr_1.4fr_1.2fr_0.8fr_1fr_0.8fr_90px] gap-3 h-14 px-3.5 items-center">
-                <span className="text-xs font-semibold text-[#1A1A1A]">{c.codigo}</span>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[13px] font-semibold text-[#1A1A1A]">{c.nombre}</span>
-                  <span className="text-[10px] text-gray-400">{c.descripcion}</span>
-                </div>
-                <span className="text-xs text-gray-600">{c.docente}</span>
-                <span className="text-xs text-gray-600">{c.grado} - {c.seccion}</span>
-                <span className="text-xs text-gray-600">{c.estudiantes} estudiantes</span>
-                <Pill variant={c.estado ? 'success' : 'muted'}>
-                  {c.estado ? 'Activo' : 'Inactivo'}
-                </Pill>
-                <div className="flex items-center gap-1.5 text-gray-400">
-                  <button onClick={() => setVerCurso(c)} className="hover:text-[#1A1A1A]" title="Ver detalle del curso"><Eye size={16} /></button>
-                  <button onClick={() => { setEditing(c); setModalOpen(true) }} className="hover:text-[#1A1A1A]" title="Editar"><Pencil size={16} /></button>
-                  <button onClick={async () => {
-                    if (!confirm(`¿Eliminar el curso ${c.codigo}?`)) return
-                    try { await api.eliminarCurso(c.id); load() } catch (e) { alert(e instanceof Error ? e.message : 'Error') }
-                  }} className="hover:text-inei-600"><Trash2 size={16} /></button>
-                </div>
-              </div>
-              {i < cursos.length - 1 && <div className="h-px bg-border-softer" />}
+          {data && cursos.length === 0 && (
+            <div className="py-10 text-center text-xs text-gray-400">
+              No hay cursos que coincidan con los filtros seleccionados.
             </div>
-          ))}
+          )}
+          {grupos.map(([materia, lista]) => {
+            const abierto = hayFiltro || abiertos.has(materia)
+            const totalEst = lista.reduce((s, c) => s + (c.estudiantes ?? 0), 0)
+            return (
+              <div key={materia}>
+                <button
+                  type="button"
+                  onClick={() => toggleGrupo(materia)}
+                  className="w-full mt-1.5 h-11 px-3.5 rounded-lg bg-surface-muted hover:bg-border-softer flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    {abierto ? <ChevronUp size={14} className="text-gray-400" /> : <ChevronDown size={14} className="text-gray-400" />}
+                    <span className="text-[13px] font-bold text-[#1A1A1A]">{materia}</span>
+                  </div>
+                  <span className="text-[11px] text-gray-400">
+                    {lista.length} curso(s) · {totalEst} estudiantes
+                  </span>
+                </button>
+
+                {abierto && lista.map((c, i) => (
+                  <div key={c.codigo}>
+                    <div className="grid grid-cols-[1fr_1.4fr_1.2fr_0.8fr_1fr_0.8fr_90px] gap-3 h-14 px-3.5 items-center">
+                      <span className="text-xs font-semibold text-[#1A1A1A]">{c.codigo}</span>
+                      <div className="flex flex-col leading-tight">
+                        <span className="text-[13px] font-semibold text-[#1A1A1A]">
+                          {c.nombre}
+                          <span className="ml-1.5 inline-block px-1.5 py-0.5 rounded bg-inei-50 text-inei-600 text-[10px] font-bold align-middle">
+                            Sección {c.seccion}
+                          </span>
+                        </span>
+                        <span className="text-[10px] text-gray-400">{c.descripcion}</span>
+                      </div>
+                      <span className="text-xs text-gray-600">{c.docente}</span>
+                      <span className="text-xs text-gray-600">{c.grado} - {c.seccion}</span>
+                      <span className="text-xs text-gray-600">{c.estudiantes} estudiantes</span>
+                      <Pill variant={c.estado ? 'success' : 'muted'}>
+                        {c.estado ? 'Activo' : 'Inactivo'}
+                      </Pill>
+                      <div className="flex items-center gap-1.5 text-gray-400">
+                        <button onClick={() => setVerCurso(c)} className="hover:text-[#1A1A1A]" title="Ver detalle del curso"><Eye size={16} /></button>
+                        <button onClick={() => { setEditing(c); setModalOpen(true) }} className="hover:text-[#1A1A1A]" title="Editar"><Pencil size={16} /></button>
+                        <button onClick={async () => {
+                          if (!confirm(`¿Eliminar el curso ${c.codigo}?`)) return
+                          try { await api.eliminarCurso(c.id); load() } catch (e) { alert(e instanceof Error ? e.message : 'Error') }
+                        }} className="hover:text-inei-600"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
+                    {i < lista.length - 1 && <div className="h-px bg-border-softer" />}
+                  </div>
+                ))}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -614,12 +717,31 @@ function StatCard({
   )
 }
 
-function FilterChip({ label }: { label: string }) {
+function FilterSelect({
+  prefix,
+  value,
+  onChange,
+  options,
+}: {
+  prefix: string
+  value: string
+  onChange: (v: string) => void
+  options: { value: string; label: string }[]
+}) {
   return (
-    <button className="h-8 px-3 rounded-lg bg-surface-muted hover:bg-border-softer text-[11px] text-gray-600 inline-flex items-center gap-1.5">
-      {label}
-      <ChevronDown size={12} className="text-gray-400" />
-    </button>
+    <div className="relative inline-flex items-center">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-8 pl-3 pr-7 rounded-lg bg-surface-muted hover:bg-border-softer text-[11px] text-gray-600 appearance-none focus:outline-none focus:ring-2 focus:ring-inei-600 cursor-pointer"
+      >
+        <option value="">{prefix}: Todos</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{prefix}: {o.label}</option>
+        ))}
+      </select>
+      <ChevronDown size={12} className="text-gray-400 absolute right-2 pointer-events-none" />
+    </div>
   )
 }
 
