@@ -587,6 +587,15 @@ export const api = {
     total_preguntas: number
   }>(`/evaluaciones/${tareaId}/entregar`, { method: 'POST', body: JSON.stringify(data) }),
 
+  // Docente: revisar respuestas de una evaluación y calificar preguntas de desarrollo.
+  respuestasEvaluacion: (tareaId: number, estudianteId: number) =>
+    request<RespuestasEvaluacionDocenteDTO>(`/evaluaciones/${tareaId}/respuestas/${estudianteId}`),
+  calificarRespuesta: (respuestaId: number, puntajeObtenido: number) =>
+    request<{ message: string }>(`/evaluaciones/respuestas/${respuestaId}/calificar`, {
+      method: 'POST',
+      body: JSON.stringify({ puntaje_obtenido: puntajeObtenido }),
+    }),
+
   // Admin CRUD usuarios
   verUsuario: (id: number) => request<{ user: UsuarioAdminDTO }>(`/usuarios/${id}`),
   crearUsuario: (data: NuevoUsuario) =>
@@ -792,6 +801,7 @@ export type SolicitudMatriculaDTO = {
     fecha_nacimiento: string | null
     genero: 'M' | 'F' | null
     direccion?: string | null
+    email_acceso?: string | null // usuario del aula virtual (solo tras aprobación)
   }
   nivel_educativo?: NivelEducativo
   telefono_contacto?: string | null
@@ -856,12 +866,14 @@ export type NuevoUsuario = {
   dni: string
   nombres: string
   apellidos: string
-  email: string
+  email?: string // si se omite, el backend genera nombre.apellido@inei46.edu.pe
   telefono?: string
   password: string
+  password_confirmation?: string
   rol: 'admin' | 'docente' | 'estudiante' | 'padre'
   grado?: string
   seccion?: string
+  especialidad?: string // solo docentes: se guarda en su perfil (tabla docentes)
 }
 
 export type RendirEvaluacionDTO = {
@@ -876,6 +888,23 @@ export type RendirEvaluacionDTO = {
     puntaje_obtenido: number
   }
   preguntas: RendirPreguntaDTO[]
+}
+
+export type RespuestaEvaluacionDocenteItem = {
+  respuesta_id: number | null
+  numero: number
+  enunciado: string
+  tipo: 'opcion_multiple' | 'respuesta_corta' | 'desarrollo'
+  puntaje_maximo: number
+  respuesta: string | null
+  correcta: boolean | null
+  puntaje_obtenido: number | null
+}
+
+export type RespuestasEvaluacionDocenteDTO = {
+  tarea: { id: number; titulo: string; puntaje_maximo: number }
+  respuestas: RespuestaEvaluacionDocenteItem[]
+  total_obtenido: number
 }
 
 export type ContenidoTipo = 'texto' | 'video' | 'presentacion' | 'ejercicio' | 'pdf' | 'cuestionario' | 'enlace'

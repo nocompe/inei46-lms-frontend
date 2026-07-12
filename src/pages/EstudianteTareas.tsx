@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { FileText, X, Send, Calendar, Trophy, Upload, Paperclip } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { FileText, X, Send, Calendar, Trophy, Upload, Paperclip, ListChecks } from 'lucide-react'
 import Pill from '../components/Pill'
 import { api, loadAuth, type MiTareaDTO, type TipoTarea } from '../lib/api'
 
@@ -147,7 +148,16 @@ function TareaCard({ tarea, onEntregar }: { tarea: MiTareaDTO; onEntregar?: () =
         </div>
       )}
 
-      {!entrega && onEntregar && (
+      {!entrega && tarea.tipo !== 'tarea' && (
+        /* Evaluaciones y exámenes se rinden con preguntas y autocalificación. */
+        <Link
+          to={`/estudiante/evaluaciones/${tarea.id}/rendir`}
+          className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5"
+        >
+          <ListChecks size={13} /> Rendir {tipoLabel[tarea.tipo].toLowerCase()}
+        </Link>
+      )}
+      {!entrega && tarea.tipo === 'tarea' && onEntregar && (
         <button
           onClick={onEntregar}
           className="h-9 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-xs font-semibold inline-flex items-center justify-center gap-1.5"

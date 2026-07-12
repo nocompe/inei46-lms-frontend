@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, Plus, BookOpen } from 'lucide-react'
+import { Search, Plus, BookOpen, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { api, type UsuarioBreve } from '../lib/api'
 
@@ -7,12 +7,15 @@ export default function AdminDocentes() {
   const [docentes, setDocentes] = useState<UsuarioBreve[]>([])
   const [loading, setLoading] = useState(true)
   const [q, setQ] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
 
-  useEffect(() => {
+  const cargar = () => {
     api.usuariosPorRol('docente')
       .then((r) => setDocentes(r.users))
       .finally(() => setLoading(false))
-  }, [])
+  }
+
+  useEffect(() => { cargar() }, [])
 
   const filtered = useMemo(() => {
     const term = q.toLowerCase().trim()
@@ -31,12 +34,12 @@ export default function AdminDocentes() {
             {docentes.length} docentes asignados a cursos del periodo 2026 - I
           </p>
         </div>
-        <Link
-          to="/registro"
+        <button
+          onClick={() => setModalOpen(true)}
           className="h-10 px-4 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-sm font-semibold inline-flex items-center gap-2"
         >
           <Plus size={16} /> Nuevo docente
-        </Link>
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
@@ -86,6 +89,110 @@ export default function AdminDocentes() {
           </div>
         ))}
       </div>
+
+      {modalOpen && (
+        <NuevoDocenteModal
+          onClose={() => setModalOpen(false)}
+          onCreated={() => { setModalOpen(false); cargar() }}
+        />
+      )}
+    </div>
+  )
+}
+
+/** Alta de docente: crea el usuario + su perfil (código y especialidad); el email institucional se genera solo. */
+function NuevoDocenteModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [form, setForm] = useState({ dni: '', nombres: '', apellidos: '', telefono: '', especialidad: '', password: '', confirmar: '' })
+  const [saving, setSaving] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" onClick={onClose}>
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={async (e) => {
+          e.preventDefault()
+          if (form.password !== form.confirmar) { setErr('Las contraseñas no coinciden'); return }
+          setSaving(true)
+          setErr(null)
+          try {
+            const r = await api.crearUsuario({
+              dni: form.dni,
+              nombres: form.nombres,
+              apellidos: form.apellidos,
+              telefono: form.telefono || undefined,
+              password: form.password,
+              password_confirmation: form.confirmar,
+              rol: 'docente',
+              especialidad: form.especialidad || undefined,
+            })
+            alert(`Docente creado.\nEmail institucional: ${(r.user as { email?: string }).email ?? '—'}\nYa puede asignarle cursos desde Asignaciones.`)
+            onCreated()
+          } catch (e) {
+            setErr(e instanceof Error ? e.message : 'Error al crear el docente')
+          } finally {
+            setSaving(false)
+          }
+        }}
+        className="bg-white rounded-2xl w-full max-w-lg p-6 flex flex-col gap-3 max-h-[90vh] overflow-y-auto"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-lg font-bold text-[#1A1A1A]">Nuevo docente</h2>
+            <span className="text-[11px] text-gray-400">El email institucional (nombre.apellido@inei46.edu.pe) se genera automáticamente</span>
+          </div>
+          <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>
+        </div>
+
+        {err && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{err}</div>}
+
+        <div className="grid grid-cols-[120px_1fr] gap-3">
+          <CampoDocente label="DNI">
+            <input required className="input" maxLength={8} value={form.dni} onChange={(e) => setForm({ ...form, dni: e.target.value })} />
+          </CampoDocente>
+          <CampoDocente label="Especialidad">
+            <input className="input" maxLength={120} placeholder="Ej. Matemáticas" value={form.especialidad} onChange={(e) => setForm({ ...form, especialidad: e.target.value })} />
+          </CampoDocente>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <CampoDocente label="Nombres">
+            <input required className="input" maxLength={80} value={form.nombres} onChange={(e) => setForm({ ...form, nombres: e.target.value })} />
+          </CampoDocente>
+          <CampoDocente label="Apellidos">
+            <input required className="input" maxLength={80} value={form.apellidos} onChange={(e) => setForm({ ...form, apellidos: e.target.value })} />
+          </CampoDocente>
+        </div>
+
+        <CampoDocente label="Teléfono (opcional)">
+          <input className="input" maxLength={20} value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
+        </CampoDocente>
+
+        <div className="grid grid-cols-2 gap-3">
+          <CampoDocente label="Contraseña">
+            <input required type="password" minLength={8} className="input" placeholder="Mínimo 8 caracteres" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          </CampoDocente>
+          <CampoDocente label="Confirmar contraseña">
+            <input required type="password" minLength={8} className="input" placeholder="Repite la contraseña" value={form.confirmar} onChange={(e) => setForm({ ...form, confirmar: e.target.value })} />
+          </CampoDocente>
+        </div>
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="h-10 px-4 rounded-lg bg-white border border-border-soft text-sm font-semibold text-gray-600">Cancelar</button>
+          <button type="submit" disabled={saving} className="h-10 px-4 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-sm font-semibold">
+            {saving ? 'Creando...' : 'Crear docente'}
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+function CampoDocente({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <label className="text-xs font-semibold text-gray-600">{label}</label>
+      {children}
     </div>
   )
 }

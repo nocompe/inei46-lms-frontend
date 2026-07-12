@@ -5,8 +5,16 @@ import {
   loadAuth,
   type AsistenciaEstado,
   type AsistenciaItem,
-  type CursoDTO,
 } from '../lib/api'
+
+type CursoSelect = {
+  id: number
+  codigo: string
+  nombre: string
+  grado: string
+  seccion: string
+  estado: boolean
+}
 
 const ESTADOS: { id: AsistenciaEstado; label: string; bg: string; text: string }[] = [
   { id: 'presente',    label: 'Presente',    bg: '#DCFCE7', text: '#15803D' },
@@ -19,7 +27,7 @@ const hoyIso = () => new Date().toISOString().slice(0, 10)
 
 export default function Asistencia() {
   const auth = loadAuth()
-  const [cursos, setCursos] = useState<CursoDTO[]>([])
+  const [cursos, setCursos] = useState<CursoSelect[]>([])
   const [cursoId, setCursoId] = useState<number | null>(null)
   const [fecha, setFecha] = useState(hoyIso())
   const [items, setItems] = useState<AsistenciaItem[]>([])
@@ -29,11 +37,18 @@ export default function Asistencia() {
   const [success, setSuccess] = useState<string | null>(null)
 
   useEffect(() => {
-    api.cursos().then((r) => {
-      const activos = r.cursos.filter((c) => c.estado)
+    // El docente solo toma asistencia de SUS cursos asignados; el admin ve todos.
+    const uid = auth?.id
+    const cargarCursos = auth?.rol === 'docente' && uid
+      ? api.miCursos(uid).then((r) => r.cursos as CursoSelect[])
+      : api.cursos().then((r) => r.cursos as CursoSelect[])
+
+    cargarCursos.then((lista) => {
+      const activos = lista.filter((c) => c.estado)
       setCursos(activos)
       if (activos[0]) setCursoId(activos[0].id)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const cargar = async () => {

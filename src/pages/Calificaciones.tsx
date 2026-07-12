@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ClipboardCheck, Save, FileText } from 'lucide-react'
+import { ClipboardCheck, Save, FileText, ListChecks, X, CheckCircle2, XCircle } from 'lucide-react'
 import Pill from '../components/Pill'
-import { api, fileUrl, loadAuth, type EntregaItem, type EntregasTareaDTO, type MiTareaDTO } from '../lib/api'
+import {
+  api, fileUrl, loadAuth,
+  type EntregaItem, type EntregasTareaDTO, type MiTareaDTO, type RespuestasEvaluacionDocenteDTO,
+} from '../lib/api'
 
 type RowState = { puntaje: string; observacion: string; saving: boolean; saved: boolean }
 
@@ -17,6 +20,7 @@ export default function Calificaciones() {
   const [rows, setRows] = useState<Record<number, RowState>>({})
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [revisando, setRevisando] = useState<{ tareaId: number; estudiante: EntregaItem['estudiante'] } | null>(null)
 
   useEffect(() => {
     if (!auth) return
@@ -201,18 +205,29 @@ export default function Calificaciones() {
                     }
                     className="h-9 px-3 rounded-md bg-surface-muted text-xs placeholder:text-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-inei-600"
                   />
-                  <button
-                    onClick={() => guardarFila(e)}
-                    disabled={row?.saving}
-                    className={`h-9 px-3 rounded-md text-[11px] font-semibold inline-flex items-center justify-center gap-1.5 ${
-                      row?.saved
-                        ? 'bg-[#DCFCE7] text-[#15803D]'
-                        : 'bg-inei-600 hover:bg-inei-700 text-white'
-                    }`}
-                  >
-                    <Save size={14} />
-                    {row?.saving ? '...' : row?.saved ? 'Guardado' : 'Guardar'}
-                  </button>
+                  <div className="flex flex-col gap-1.5">
+                    <button
+                      onClick={() => guardarFila(e)}
+                      disabled={row?.saving}
+                      className={`h-9 px-3 rounded-md text-[11px] font-semibold inline-flex items-center justify-center gap-1.5 ${
+                        row?.saved
+                          ? 'bg-[#DCFCE7] text-[#15803D]'
+                          : 'bg-inei-600 hover:bg-inei-700 text-white'
+                      }`}
+                    >
+                      <Save size={14} />
+                      {row?.saving ? '...' : row?.saved ? 'Guardado' : 'Guardar'}
+                    </button>
+                    {tareaActual && tareaActual.tipo !== 'tarea' && (
+                      <button
+                        onClick={() => setRevisando({ tareaId: tareaActual.id, estudiante: e.estudiante })}
+                        className="h-8 px-3 rounded-md border border-inei-600 text-inei-600 hover:bg-inei-50 text-[11px] font-semibold inline-flex items-center justify-center gap-1.5"
+                        title="Revisar respuestas y calificar preguntas de desarrollo"
+                      >
+                        <ListChecks size={13} /> Respuestas
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {idx < data.entregas.length - 1 && <div className="h-px bg-border-softer" />}
               </div>
@@ -226,6 +241,140 @@ export default function Calificaciones() {
               <ClipboardCheck size={14} className="text-gray-400" />
               {data.entregas.filter((e) => e.calificacion).length} de {data.entregas.length} calificadas
             </div>
+          </div>
+        )}
+      </div>
+
+      {revisando && (
+        <RespuestasModal
+          tareaId={revisando.tareaId}
+          estudiante={revisando.estudiante}
+          onClose={() => setRevisando(null)}
+        />
+      )}
+    </div>
+  )
+}
+
+/** Modal del docente: respuestas del estudiante, con calificación manual de las de desarrollo. */
+function RespuestasModal({
+  tareaId,
+  estudiante,
+  onClose,
+}: {
+  tareaId: number
+  estudiante: EntregaItem['estudiante']
+  onClose: () => void
+}) {
+  const [data, setData] = useState<RespuestasEvaluacionDocenteDTO | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [puntajes, setPuntajes] = useState<Record<number, string>>({})
+  const [guardando, setGuardando] = useState<number | null>(null)
+
+  const cargar = () => {
+    api.respuestasEvaluacion(tareaId, estudiante.id)
+      .then((d) => {
+        setData(d)
+        const p: Record<number, string> = {}
+        d.respuestas.forEach((r) => {
+          if (r.respuesta_id && r.tipo === 'desarrollo') p[r.respuesta_id] = r.puntaje_obtenido?.toString() ?? ''
+        })
+        setPuntajes(p)
+      })
+      .catch((e) => setError(e instanceof Error ? e.message : 'Error al cargar respuestas'))
+  }
+
+  useEffect(() => { cargar() /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [tareaId, estudiante.id])
+
+  const calificar = async (respuestaId: number, max: number) => {
+    const num = Number(puntajes[respuestaId])
+    if (Number.isNaN(num) || num < 0 || num > max) {
+      setError(`El puntaje debe estar entre 0 y ${max}`)
+      return
+    }
+    setError(null)
+    setGuardando(respuestaId)
+    try {
+      await api.calificarRespuesta(respuestaId, num)
+      cargar()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo calificar')
+    } finally {
+      setGuardando(null)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-2xl p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-lg font-bold text-[#1A1A1A]">Respuestas de la evaluación</h2>
+            <span className="text-[11px] text-gray-400">
+              {estudiante.nombres} {estudiante.apellidos} · DNI {estudiante.dni}
+            </span>
+          </div>
+          <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>
+        </div>
+
+        {error && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>}
+        {!data && !error && <div className="py-8 text-center text-xs text-gray-400">Cargando respuestas...</div>}
+
+        {data && data.respuestas.every((r) => !r.respuesta_id) && (
+          <div className="py-8 text-center text-xs text-gray-400">El estudiante aún no rinde esta evaluación.</div>
+        )}
+
+        {data?.respuestas.filter((r) => r.respuesta_id).map((r) => (
+          <div key={r.respuesta_id} className="border border-border-soft rounded-xl p-4 flex flex-col gap-2">
+            <div className="flex items-start justify-between gap-3">
+              <span className="text-[13px] font-semibold text-[#1A1A1A]">
+                {r.numero}. {r.enunciado}
+              </span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">{r.puntaje_maximo} pts</span>
+            </div>
+            <div className="bg-surface-muted rounded-lg px-3 py-2 text-xs text-gray-700">
+              {r.respuesta || <em className="text-gray-400">Sin respuesta</em>}
+            </div>
+
+            {r.tipo !== 'desarrollo' ? (
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+                {r.correcta
+                  ? <><CheckCircle2 size={14} className="text-[#15803D]" /><span className="text-[#15803D]">Correcta · {r.puntaje_obtenido} pts (autocalificada)</span></>
+                  : <><XCircle size={14} className="text-inei-600" /><span className="text-inei-600">Incorrecta · 0 pts (autocalificada)</span></>}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-semibold text-gray-600">Puntaje:</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={r.puntaje_maximo}
+                  step={0.5}
+                  value={puntajes[r.respuesta_id!] ?? ''}
+                  onChange={(ev) => setPuntajes((s) => ({ ...s, [r.respuesta_id!]: ev.target.value }))}
+                  className="h-8 w-20 px-2 rounded-md bg-surface-muted text-sm font-bold focus:outline-none focus:bg-white focus:ring-2 focus:ring-inei-600"
+                />
+                <span className="text-[11px] text-gray-400">/ {r.puntaje_maximo}</span>
+                <button
+                  onClick={() => calificar(r.respuesta_id!, r.puntaje_maximo)}
+                  disabled={guardando === r.respuesta_id}
+                  className="h-8 px-3 rounded-md bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-[11px] font-semibold"
+                >
+                  {guardando === r.respuesta_id ? '...' : 'Calificar'}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+
+        {data && (
+          <div className="flex items-center justify-between pt-2 border-t border-border-softer">
+            <span className="text-xs text-gray-500">
+              Usa este total como referencia para la nota de la entrega.
+            </span>
+            <span className="text-sm font-bold text-[#1A1A1A]">
+              Total: <span className="text-inei-600">{data.total_obtenido}</span> / {data.tarea.puntaje_maximo}
+            </span>
           </div>
         )}
       </div>

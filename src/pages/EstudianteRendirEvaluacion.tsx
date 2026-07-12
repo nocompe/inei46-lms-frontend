@@ -27,6 +27,20 @@ export default function EstudianteRendirEvaluacion() {
   }, [tareaId, auth?.id])
 
   if (!auth) return <div className="p-8 text-sm text-gray-600">Sesión no encontrada.</div>
+
+  // Si la carga falló (p. ej. 403 por no estar matriculado), muestra el error en vez de un spinner infinito.
+  if (!data && error) {
+    return (
+      <div className="max-w-xl mx-auto pt-10 flex flex-col gap-4">
+        <div className="rounded-lg bg-inei-50 border border-inei-200 px-4 py-3 text-sm text-inei-700">
+          {error}
+        </div>
+        <Link to="/estudiante/tareas" className="inline-flex items-center gap-1.5 text-sm font-semibold text-inei-600 hover:text-inei-700">
+          <ArrowLeft size={15} /> Volver a mis tareas
+        </Link>
+      </div>
+    )
+  }
   if (!data) return <div className="p-8 text-sm text-gray-400">Cargando evaluación...</div>
 
   const submit = async () => {
@@ -122,10 +136,22 @@ export default function EstudianteRendirEvaluacion() {
         ))}
       </div>
 
-      <div className="flex justify-end gap-2 sticky bottom-0 bg-surface-muted py-3 -mx-8 px-8 border-t border-border-soft">
-        <button onClick={submit} disabled={enviando} className="h-11 px-5 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-sm font-semibold">
-          {enviando ? 'Enviando...' : 'Enviar evaluación'}
-        </button>
+      <div className="flex justify-end items-center gap-3 sticky bottom-0 bg-surface-muted py-3 -mx-8 px-8 border-t border-border-soft">
+        {data.tarea.ya_respondida ? (
+          /* Un solo intento: si ya rindió, solo puede revisar sus respuestas. */
+          <>
+            <span className="text-xs text-gray-500">
+              Ya rendiste esta evaluación (un solo intento). Puntaje: <strong>{data.tarea.puntaje_obtenido} / {data.tarea.puntaje_maximo}</strong>
+            </span>
+            <Link to="/estudiante/tareas" className="h-11 px-5 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-sm font-semibold inline-flex items-center">
+              Volver a mis tareas
+            </Link>
+          </>
+        ) : (
+          <button onClick={submit} disabled={enviando} className="h-11 px-5 rounded-lg bg-inei-600 hover:bg-inei-700 disabled:opacity-60 text-white text-sm font-semibold">
+            {enviando ? 'Enviando...' : 'Enviar evaluación'}
+          </button>
+        )}
       </div>
     </div>
   )

@@ -150,6 +150,8 @@ function UsuarioModal({
     seccion: editing?.seccion ?? '',
     estado: (editing as any)?.estado ?? true,
   })
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [especialidad, setEspecialidad] = useState('')
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
 
@@ -176,17 +178,27 @@ function UsuarioModal({
               if (form.password) payload.password = form.password
               await api.actualizarUsuario(editing.id, payload)
             } else {
-              await api.crearUsuario({
+              if (form.password !== confirmPassword) {
+                setErr('Las contraseñas no coinciden')
+                setSaving(false)
+                return
+              }
+              const r = await api.crearUsuario({
                 dni: form.dni,
                 nombres: form.nombres,
                 apellidos: form.apellidos,
-                email: form.email,
+                email: form.email || undefined, // vacío → el backend genera el institucional
                 telefono: form.telefono || undefined,
                 password: form.password,
+                password_confirmation: confirmPassword,
                 rol: form.rol,
                 grado: form.rol === 'estudiante' ? form.grado : undefined,
                 seccion: form.rol === 'estudiante' ? form.seccion : undefined,
+                especialidad: form.rol === 'docente' ? (especialidad || undefined) : undefined,
               })
+              if (!form.email && (r.user as any)?.email) {
+                alert(`Usuario creado. Email institucional generado: ${(r.user as any).email}`)
+              }
             }
             onSaved()
           } catch (e) {
@@ -222,8 +234,16 @@ function UsuarioModal({
           <Field label="Apellidos"><input required className="input" maxLength={80} value={form.apellidos} onChange={(e) => setForm({ ...form, apellidos: e.target.value })} /></Field>
         </div>
 
-        <Field label="Email"><input required type="email" className="input" maxLength={120} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
+        <Field label={isEdit ? 'Email' : 'Email (vacío = se genera nombre.apellido@inei46.edu.pe)'}>
+          <input required={isEdit} type="email" className="input" maxLength={120} placeholder={isEdit ? '' : 'Automático si lo dejas vacío'} value={form.email ?? ''} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        </Field>
         <Field label="Teléfono (opcional)"><input className="input" maxLength={20} value={form.telefono ?? ''} onChange={(e) => setForm({ ...form, telefono: e.target.value })} /></Field>
+
+        {!isEdit && form.rol === 'docente' && (
+          <Field label="Especialidad (se guarda en el perfil del docente)">
+            <input className="input" maxLength={120} placeholder="Ej. Matemáticas, Comunicación..." value={especialidad} onChange={(e) => setEspecialidad(e.target.value)} />
+          </Field>
+        )}
 
         {form.rol === 'estudiante' && (
           <div className="grid grid-cols-2 gap-3">
@@ -245,6 +265,11 @@ function UsuarioModal({
         <Field label={isEdit ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña'}>
           <input type="password" required={!isEdit} minLength={8} className="input" placeholder="Mínimo 8 caracteres" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
         </Field>
+        {!isEdit && (
+          <Field label="Confirmar contraseña">
+            <input type="password" required minLength={8} className="input" placeholder="Repite la contraseña" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          </Field>
+        )}
 
         {isEdit && (
           <Field label="Estado">

@@ -11,8 +11,9 @@ import {
   Presentation,
   Video,
   Pencil,
+  X,
 } from 'lucide-react'
-import { api, type ContenidoCursoDTO, type ContenidoTipo } from '../lib/api'
+import { api, fileUrl, type ContenidoCursoDTO, type ContenidoItem, type ContenidoTipo } from '../lib/api'
 
 const tipoLabels: Record<ContenidoTipo, string> = {
   texto: 'Texto',
@@ -51,6 +52,7 @@ export default function EstudianteCursoDetalle() {
   const [expandidas, setExpandidas] = useState<Set<number>>(new Set())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [verMaterial, setVerMaterial] = useState<ContenidoItem | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -163,17 +165,12 @@ export default function EstudianteCursoDetalle() {
                       {u.contenidos.map((c) => {
                         const Icon = tipoIcon[c.tipo]
                         const color = tipoColor[c.tipo]
-                        const Wrapper: React.ElementType = c.url ? 'a' : 'div'
-                        const props = c.url
-                          ? { href: c.url, target: '_blank', rel: 'noopener noreferrer' }
-                          : {}
                         return (
-                          <Wrapper
+                          <button
                             key={c.id}
-                            {...props}
-                            className={`flex items-center gap-3 p-3 rounded-xl border border-border-softer transition ${
-                              c.url ? 'hover:border-inei-600 hover:bg-inei-50 cursor-pointer' : ''
-                            }`}
+                            type="button"
+                            onClick={() => setVerMaterial(c)}
+                            className="flex items-center gap-3 p-3 rounded-xl border border-border-softer transition text-left w-full hover:border-inei-600 hover:bg-inei-50 cursor-pointer"
                           >
                             <div
                               className="h-10 w-10 rounded-lg grid place-items-center shrink-0"
@@ -204,10 +201,8 @@ export default function EstudianteCursoDetalle() {
                                 )}
                               </div>
                             </div>
-                            {c.url && (
-                              <ExternalLink size={14} className="text-gray-400 shrink-0" />
-                            )}
-                          </Wrapper>
+                            <ChevronDown size={14} className="text-gray-400 shrink-0 -rotate-90" />
+                          </button>
                         )
                       })}
                     </div>
@@ -242,6 +237,120 @@ export default function EstudianteCursoDetalle() {
           )}
         </>
       )}
+
+      {verMaterial && (
+        <MaterialModal contenido={verMaterial} onClose={() => setVerMaterial(null)} />
+      )}
+    </div>
+  )
+}
+
+/** Detecta el tipo de recurso para incrustarlo (PDF, YouTube, video, imagen o web). */
+function tipoRecurso(url: string): 'pdf' | 'youtube' | 'video' | 'imagen' | 'web' {
+  const limpia = url.split('?')[0].toLowerCase()
+  if (limpia.endsWith('.pdf')) return 'pdf'
+  if (/youtube\.com\/watch|youtu\.be\//i.test(url)) return 'youtube'
+  if (/\.(mp4|webm|ogg)$/.test(limpia)) return 'video'
+  if (/\.(jpg|jpeg|png|gif|webp)$/.test(limpia)) return 'imagen'
+  return 'web'
+}
+
+function youtubeEmbed(url: string): string {
+  const id = url.match(/(?:v=|youtu\.be\/)([\w-]{6,})/)?.[1] ?? ''
+  return `https://www.youtube.com/embed/${id}`
+}
+
+/** Visor de material estilo aula virtual: descripción del docente + recurso incrustado. */
+function MaterialModal({ contenido, onClose }: { contenido: ContenidoItem; onClose: () => void }) {
+  const Icon = tipoIcon[contenido.tipo]
+  const color = tipoColor[contenido.tipo]
+  const url = contenido.url ? fileUrl(contenido.url) : null
+  const recurso = url ? tipoRecurso(url) : null
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4" onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-4xl flex flex-col max-h-[92vh] overflow-hidden">
+        {/* Cabecera: título + descripción del docente */}
+        <div className="p-5 pb-4 border-b border-border-softer flex flex-col gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="h-11 w-11 rounded-xl grid place-items-center shrink-0" style={{ background: color.bg }}>
+                <Icon size={20} style={{ color: color.text }} />
+              </div>
+              <div className="flex flex-col leading-tight">
+                <h2 className="text-base font-bold text-[#1A1A1A]">{contenido.titulo}</h2>
+                <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                  <span className="h-5 px-2 rounded-full font-bold inline-flex items-center" style={{ background: color.bg, color: color.text }}>
+                    {tipoLabels[contenido.tipo].toUpperCase()}
+                  </span>
+                  {contenido.fecha && <span>Publicado el {new Date(contenido.fecha).toLocaleDateString('es-PE')}</span>}
+                </div>
+              </div>
+            </div>
+            <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>
+          </div>
+          {contenido.descripcion && (
+            <p className="text-[12px] text-gray-600 leading-relaxed whitespace-pre-line max-h-28 overflow-y-auto">
+              {contenido.descripcion}
+            </p>
+          )}
+        </div>
+
+        {/* Recurso incrustado según su tipo */}
+        <div className="flex-1 min-h-0 bg-surface-muted">
+          {!url && (
+            <div className="h-64 grid place-items-center text-xs text-gray-400">
+              El docente aún no adjuntó un recurso a este material.
+            </div>
+          )}
+          {url && recurso === 'pdf' && (
+            <iframe src={url} title={contenido.titulo} className="w-full h-[62vh] border-0" />
+          )}
+          {url && recurso === 'youtube' && (
+            <iframe
+              src={youtubeEmbed(url)}
+              title={contenido.titulo}
+              className="w-full h-[62vh] border-0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )}
+          {url && recurso === 'video' && (
+            <video src={url} controls className="w-full h-[62vh] bg-black" />
+          )}
+          {url && recurso === 'imagen' && (
+            <div className="h-[62vh] overflow-auto grid place-items-center p-4">
+              <img src={url} alt={contenido.titulo} className="max-w-full rounded-lg" />
+            </div>
+          )}
+          {url && recurso === 'web' && (
+            <iframe src={url} title={contenido.titulo} className="w-full h-[62vh] border-0 bg-white" />
+          )}
+        </div>
+
+        {/* Pie: descarga / abrir en pestaña (por si el sitio no permite incrustarse) */}
+        <div className="px-5 py-3 border-t border-border-softer flex items-center justify-between gap-3">
+          <span className="text-[11px] text-gray-400">
+            {url ? 'Recuerda que puedes abrir o descargar el recurso.' : ' '}
+          </span>
+          <div className="flex gap-2">
+            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg bg-white border border-border-soft text-xs font-semibold text-gray-600">
+              Cerrar
+            </button>
+            {url && (
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={recurso === 'pdf' || recurso === 'video' || recurso === 'imagen' ? '' : undefined}
+                className="h-9 px-4 rounded-lg bg-inei-600 hover:bg-inei-700 text-white text-xs font-semibold inline-flex items-center gap-1.5"
+              >
+                <ExternalLink size={13} /> {recurso === 'web' || recurso === 'youtube' ? 'Abrir en pestaña nueva' : 'Descargar archivo'}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

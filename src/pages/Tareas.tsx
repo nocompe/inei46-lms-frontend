@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, X, FileText, Calendar, Trophy, Trash2, ListChecks, Pencil } from 'lucide-react'
 import Pill from '../components/Pill'
-import { api, type CursoDTO, type PreguntaInput, type TareaDTO, type TipoTarea } from '../lib/api'
+import { api, loadAuth, type CursoDTO, type PreguntaInput, type TareaDTO, type TipoTarea } from '../lib/api'
 
 type PreguntaTipo = PreguntaInput['tipo']
 const tipoPreguntaLabel: Record<PreguntaTipo, string> = {
@@ -163,8 +163,13 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
   }
 
   useEffect(() => {
-    api.cursos().then((r) => {
-      const activos = r.cursos.filter((c) => c.estado)
+    // El docente solo puede crear tareas en SUS cursos asignados.
+    const auth = loadAuth()
+    const cargar = auth?.rol === 'docente' && auth.id
+      ? api.miCursos(auth.id).then((r) => r.cursos as CursoDTO[])
+      : api.cursos().then((r) => r.cursos)
+    cargar.then((lista) => {
+      const activos = lista.filter((c) => c.estado)
       setCursos(activos)
       if (!isEdit && activos[0]) setForm((f) => ({ ...f, curso_id: activos[0].id }))
     })

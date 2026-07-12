@@ -579,8 +579,14 @@ function DetalleModal({ solicitud, onClose, onUpdated }: { solicitud: SolicitudM
         )}
 
         {solicitud.estado === 'aprobada' && solicitud.estudiante_id && (
-          <div className="rounded-lg bg-[#DCFCE7] border border-[#86EFAC] px-3 py-2 text-xs text-[#15803D]">
-            ✓ Tu hijo fue registrado en el sistema. Revisa tus notificaciones para ver las credenciales.
+          <div className="rounded-lg bg-[#DCFCE7] border border-[#86EFAC] px-3 py-2.5 text-xs text-[#15803D] flex flex-col gap-1">
+            <span>✓ Tu hijo(a) fue registrado(a) en el sistema. Te enviamos las credenciales a tu bandeja de <strong>Comunicados</strong>.</span>
+            {solicitud.estudiante.email_acceso && (
+              <span>
+                <strong>Usuario del aula virtual:</strong> {solicitud.estudiante.email_acceso}
+                {' · '}<strong>Contraseña temporal:</strong> el DNI del estudiante (debe cambiarla al primer ingreso).
+              </span>
+            )}
           </div>
         )}
 

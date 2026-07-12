@@ -119,8 +119,14 @@ function NuevoMensajeModal({ emisorId, onClose, onSent }: { emisorId: number; on
         e.preventDefault()
         if (seleccionados.size === 0) return alert('Selecciona al menos un destinatario')
         setSending(true)
-        await api.enviarMensaje({ id_usuario_emisor: emisorId, asunto: form.asunto, contenido: form.contenido, destinatarios: Array.from(seleccionados) })
-        onSent()
+        try {
+          await api.enviarMensaje({ id_usuario_emisor: emisorId, asunto: form.asunto, contenido: form.contenido, destinatarios: Array.from(seleccionados) })
+          onSent()
+        } catch (err) {
+          alert(err instanceof Error ? err.message : 'No se pudo enviar el comunicado')
+        } finally {
+          setSending(false)
+        }
       }} className="bg-white rounded-2xl w-full max-w-xl p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1A1A1A]">Nuevo comunicado</h2>
