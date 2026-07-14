@@ -50,7 +50,7 @@ export default function AdminUsuarios() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Gestión de usuarios</h1>
           <p className="text-sm text-gray-600">Crea, edita o desactiva usuarios del sistema</p>
@@ -62,7 +62,7 @@ export default function AdminUsuarios() {
 
       {error && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>}
 
-      <div className="flex gap-1 border-b border-border-soft">
+      <div className="flex gap-1 border-b border-border-soft overflow-x-auto">
         {(['docente', 'estudiante', 'padre', 'admin'] as Rol[]).map((r) => {
           const Icon = rolIcons[r]
           return (
@@ -74,14 +74,16 @@ export default function AdminUsuarios() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Buscar por nombre o DNI..." className="flex-1 text-xs bg-transparent placeholder:text-gray-400 focus:outline-none" />
           </div>
           <span className="text-[11px] text-gray-400">{filtered.length} {rolLabel[tab].toLowerCase()}(s)</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px] flex flex-col gap-3">
         <div className="grid grid-cols-[100px_2fr_1fr_120px_100px_100px] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>DNI</span><span>Nombre</span><span>Email</span><span>Grado · Sección</span><span>Estado</span><span></span>
         </div>
@@ -112,6 +114,8 @@ export default function AdminUsuarios() {
             {i < filtered.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {modalOpen && (
@@ -215,7 +219,7 @@ function UsuarioModal({
         </div>
         {err && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{err}</div>}
 
-        <div className="grid grid-cols-[120px_1fr] gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3">
           <Field label="DNI">
             <input required disabled={isEdit} className={`input ${isEdit ? 'bg-border-softer cursor-not-allowed' : ''}`} maxLength={8} value={form.dni} onChange={(e) => setForm({ ...form, dni: e.target.value })} />
           </Field>
@@ -229,7 +233,7 @@ function UsuarioModal({
           </Field>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Nombres"><input required className="input" maxLength={80} value={form.nombres} onChange={(e) => setForm({ ...form, nombres: e.target.value })} /></Field>
           <Field label="Apellidos"><input required className="input" maxLength={80} value={form.apellidos} onChange={(e) => setForm({ ...form, apellidos: e.target.value })} /></Field>
         </div>
@@ -246,7 +250,7 @@ function UsuarioModal({
         )}
 
         {form.rol === 'estudiante' && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Grado">
               <select className="input" value={form.grado ?? ''} onChange={(e) => setForm({ ...form, grado: e.target.value })}>
                 <option value="">—</option>

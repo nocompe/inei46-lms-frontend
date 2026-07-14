@@ -49,7 +49,7 @@ export default function AdminVinculos() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Vínculos padre-estudiante</h1>
           <p className="text-sm text-gray-600">Gestiona qué padres tienen acceso a qué estudiantes</p>
@@ -61,15 +61,15 @@ export default function AdminVinculos() {
 
       {error && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <StatBox icon={Link2} label="Vínculos activos" value={String(vinculos.length)} color="#C8102E" />
         <StatBox icon={UsersIcon} label="Padres con hijos" value={String(padresUnicos)} color="#1E40AF" />
         <StatBox icon={HeartHandshake} label="Estudiantes con padre" value={String(estudiantesUnicos)} color="#15803D" />
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input
               value={search}
@@ -81,6 +81,8 @@ export default function AdminVinculos() {
           <span className="text-[11px] text-gray-400">{filtrados.length} vínculo(s)</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px] flex flex-col gap-3">
         <div className="grid grid-cols-[2fr_2fr_120px_120px_80px] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Padre / madre / tutor</span>
           <span>Estudiante</span>
@@ -129,6 +131,8 @@ export default function AdminVinculos() {
             {i < filtrados.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {modalOpen && (

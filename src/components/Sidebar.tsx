@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { UserCircle, LogOut, MoreVertical } from 'lucide-react'
+import { UserCircle, LogOut, MoreVertical, Menu, X } from 'lucide-react'
 import Logo from './Logo'
 import { clearAuth, loadAuth } from '../lib/api'
 
@@ -19,7 +19,11 @@ type SidebarProps = {
   userColor?: string
 }
 
-export default function Sidebar({ brandSubtitle, sectionLabel, items, fallbackRole, userColor }: SidebarProps) {
+type SidebarContentProps = SidebarProps & {
+  onNavigate?: () => void
+}
+
+function SidebarContent({ brandSubtitle, sectionLabel, items, fallbackRole, userColor, onNavigate }: SidebarContentProps) {
   const auth = loadAuth()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -58,7 +62,7 @@ export default function Sidebar({ brandSubtitle, sectionLabel, items, fallbackRo
   const initials = auth ? (auth.nombres.charAt(0) + auth.apellidos.charAt(0)).toUpperCase() : '·'
 
   return (
-    <aside className="w-60 shrink-0 bg-white flex flex-col p-6 gap-7">
+    <>
       <Logo size="sm" subtitle={brandSubtitle} />
 
       <nav className="flex flex-col gap-1 flex-1">
@@ -68,6 +72,7 @@ export default function Sidebar({ brandSubtitle, sectionLabel, items, fallbackRo
             key={item.to}
             to={item.to}
             end
+            onClick={onNavigate}
             className={({ isActive }) =>
               `h-10 px-3 rounded-lg flex items-center gap-3 text-[13px] transition ${
                 isActive
@@ -103,7 +108,7 @@ export default function Sidebar({ brandSubtitle, sectionLabel, items, fallbackRo
         {menuOpen && (
           <div className="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-xl shadow-lg border border-border-soft py-1 z-30 overflow-hidden">
             <button
-              onClick={() => { setMenuOpen(false); navigate(perfilPath) }}
+              onClick={() => { setMenuOpen(false); onNavigate?.(); navigate(perfilPath) }}
               className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-surface-muted flex items-center gap-2"
             >
               <UserCircle size={14} className="text-gray-400" />
@@ -120,7 +125,49 @@ export default function Sidebar({ brandSubtitle, sectionLabel, items, fallbackRo
           </div>
         )}
       </div>
-    </aside>
+    </>
+  )
+}
+
+export default function Sidebar(props: SidebarProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  return (
+    <>
+      {/* Sidebar fija en desktop */}
+      <aside className="hidden lg:flex w-60 shrink-0 bg-white flex-col p-6 gap-7">
+        <SidebarContent {...props} />
+      </aside>
+
+      {/* Botón hamburguesa en móvil */}
+      <button
+        onClick={() => setDrawerOpen(true)}
+        aria-label="Abrir menú"
+        className="lg:hidden fixed top-4 left-4 z-40 h-9 w-9 grid place-items-center bg-white rounded-lg shadow-md border border-border-soft text-gray-600"
+      >
+        <Menu size={18} />
+      </button>
+
+      {/* Drawer móvil */}
+      {drawerOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <aside className="absolute inset-y-0 left-0 w-64 max-w-[85vw] bg-white flex flex-col p-6 gap-7 shadow-2xl overflow-y-auto">
+            <button
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Cerrar menú"
+              className="absolute top-4 right-3 h-8 w-8 grid place-items-center rounded-lg text-gray-400 hover:bg-surface-muted"
+            >
+              <X size={16} />
+            </button>
+            <SidebarContent {...props} onNavigate={() => setDrawerOpen(false)} />
+          </aside>
+        </div>
+      )}
+    </>
   )
 }
 

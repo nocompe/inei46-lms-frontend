@@ -34,7 +34,8 @@ export default function EstudianteHorario() {
       )}
 
       {!loading && horarios.length > 0 && (
-        <div className="grid grid-cols-5 gap-3">
+        <div className="overflow-x-auto">
+        <div className="min-w-[900px] grid grid-cols-5 gap-3">
           {DIAS.map((d) => (
             <div key={d} className="bg-white rounded-2xl p-3 flex flex-col gap-2">
               <h3 className="text-xs font-bold text-center uppercase text-gray-400 pb-2 border-b border-border-softer">{d}</h3>
@@ -52,6 +53,7 @@ export default function EstudianteHorario() {
               </div>
             </div>
           ))}
+        </div>
         </div>
       )}
     </div>

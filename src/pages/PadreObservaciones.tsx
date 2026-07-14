@@ -35,7 +35,7 @@ export default function PadreObservaciones() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Observaciones</h1>
           <p className="text-sm text-gray-600">Comentarios y llamados de atención registrados por los docentes</p>

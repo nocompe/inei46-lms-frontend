@@ -54,7 +54,7 @@ export default function EstudianteTareas() {
       )}
 
       {!loading && (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Column titulo="Por entregar" color="#C8102E" count={pendientes.length}>
             {pendientes.length === 0 && (
               <Empty>No tienes tareas pendientes. ¡Buen trabajo!</Empty>

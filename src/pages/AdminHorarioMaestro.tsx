@@ -90,14 +90,14 @@ export default function AdminHorarioMaestro() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Horario maestro por grado-sección</h1>
           <p className="text-sm text-gray-600">
             Vista semanal de los cursos asignados a cada sección. Los estudiantes nuevos del grado quedan inscritos automáticamente en estos cursos.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={sincronizarMatriculas}
             disabled={sincronizando}
@@ -122,10 +122,10 @@ export default function AdminHorarioMaestro() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl p-5 flex items-center gap-5">
+      <div className="bg-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center gap-5">
         <div className="flex flex-col gap-1.5 flex-1">
           <label className="text-[10px] font-bold uppercase text-gray-400">Grado</label>
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {GRADOS.map((g) => (
               <button
                 key={g}
@@ -156,7 +156,7 @@ export default function AdminHorarioMaestro() {
           </div>
         </div>
         {data && (
-          <div className="flex items-center gap-6 px-5 border-l border-border-soft">
+          <div className="flex items-center gap-6 sm:px-5 sm:border-l border-border-soft">
             <Mini label="Cursos" value={data.cursos.length} icon={BookOpen} />
             <Mini label="Bloques/sem" value={totalBloques} icon={Clock} />
             <Mini label="Estudiantes" value={data.estudiantes} icon={GraduationCap} />
@@ -189,7 +189,8 @@ export default function AdminHorarioMaestro() {
 
       {!loading && data && data.cursos.length > 0 && (
         <>
-          <div className="grid grid-cols-5 gap-3">
+          <div className="overflow-x-auto">
+          <div className="min-w-[900px] grid grid-cols-5 gap-3">
             {DIAS.map((dia) => (
               <div key={dia} className="bg-white rounded-2xl overflow-hidden flex flex-col">
                 <div className="bg-[#1A1A1A] text-white px-4 py-2.5 text-xs font-bold uppercase text-center">
@@ -233,13 +234,14 @@ export default function AdminHorarioMaestro() {
               </div>
             ))}
           </div>
+          </div>
 
           <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
             <h2 className="text-sm font-bold text-[#1A1A1A]">Lista de cursos de {grado}-{seccion}</h2>
             <p className="text-[11px] text-gray-500">
               Estos son los cursos en los que se inscribe automáticamente cualquier estudiante asignado al {grado}-{seccion}.
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {data.cursos.map((c) => {
                 const color = cursoColor.get(c.id) ?? CURSO_COLORS[0]
                 return (

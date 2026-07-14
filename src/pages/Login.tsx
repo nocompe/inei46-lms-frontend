@@ -31,7 +31,7 @@ export default function Login() {
             setLoading(false)
           }
         }}
-        className="w-full max-w-[440px] bg-white rounded-2xl p-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col gap-6"
+        className="w-full max-w-[440px] bg-white rounded-2xl p-6 sm:p-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col gap-6"
       >
         <Logo size="md" />
 

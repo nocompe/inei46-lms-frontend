@@ -50,7 +50,7 @@ export default function Register() {
             setLoading(false)
           }
         }}
-        className="w-full max-w-[480px] bg-white rounded-2xl p-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col gap-5"
+        className="w-full max-w-[480px] bg-white rounded-2xl p-6 sm:p-10 shadow-[0_1px_2px_rgba(0,0,0,0.04)] flex flex-col gap-5"
       >
         <Logo size="md" />
 
@@ -81,7 +81,7 @@ export default function Register() {
           <span className="text-sm font-bold text-inei-700">Padre de familia</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Nombres">
             <input
               required
@@ -124,7 +124,7 @@ export default function Register() {
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Field label="Contraseña">
             <input
               required

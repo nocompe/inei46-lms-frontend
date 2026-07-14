@@ -101,7 +101,7 @@ export default function Calificaciones() {
       )}
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-        <div className="flex items-end gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
           <div className="flex-1 flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600">Tarea o evaluación</label>
             <select
@@ -127,7 +127,8 @@ export default function Calificaciones() {
           )}
         </div>
 
-        <div>
+        <div className="overflow-x-auto">
+        <div className="min-w-[860px]">
           <div className="grid grid-cols-[1.4fr_140px_1fr_120px_1.4fr_120px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
             <span>Estudiante</span>
             <span>Entrega</span>
@@ -233,6 +234,7 @@ export default function Calificaciones() {
               </div>
             )
           })}
+        </div>
         </div>
 
         {data && data.entregas.length > 0 && (

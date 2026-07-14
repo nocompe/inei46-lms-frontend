@@ -27,7 +27,7 @@ export default function AdminAsignaciones() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Asignaciones docentes</h1>
           <p className="text-sm text-gray-600">Asigna cursos a docentes con su aula y horario semanal</p>
@@ -39,7 +39,7 @@ export default function AdminAsignaciones() {
 
       {error && (<div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>)}
 
-      <div className="grid grid-cols-3 gap-3.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3.5">
         <Stat icon={GraduationCap} label="Asignaciones activas" value={String(asignaciones.filter(a => a.estado === 'activa').length)} />
         <Stat icon={BookOpen} label="Cursos asignados" value={String(new Set(asignaciones.map(a => a.curso.id)).size)} />
         <Stat icon={Clock} label="Bloques horarios" value={String(asignaciones.reduce((acc, a) => acc + a.horarios.length, 0))} />
@@ -47,6 +47,8 @@ export default function AdminAsignaciones() {
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
         <h2 className="text-sm font-bold text-[#1A1A1A]">Listado</h2>
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px] flex flex-col gap-3">
         <div className="grid grid-cols-[1.4fr_1.4fr_120px_120px_1fr_60px] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Docente</span><span>Curso</span><span>Aula</span><span>Periodo</span><span>Horario</span><span></span>
         </div>
@@ -76,6 +78,8 @@ export default function AdminAsignaciones() {
             {i < asignaciones.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {modalOpen && <NuevaAsignacionModal onClose={() => setModalOpen(false)} onCreated={() => { setModalOpen(false); load() }} />}
@@ -161,7 +165,7 @@ function NuevaAsignacionModal({ onClose, onCreated }: { onClose: () => void; onC
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600">Filtrar por grado</label>
             <select className="input" value={filtroGrado} onChange={(e) => setFiltroGrado(e.target.value)}>
@@ -192,7 +196,7 @@ function NuevaAsignacionModal({ onClose, onCreated }: { onClose: () => void; onC
             {cursosFiltrados.map((c) => <option key={c.id} value={c.id}>{c.codigo} · {c.nombre} ({c.grado}-{c.seccion})</option>)}
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600">Aula</label>
             <input className="input" value={form.aula} maxLength={50} onChange={(e) => setForm({ ...form, aula: e.target.value })} />

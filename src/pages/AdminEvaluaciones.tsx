@@ -28,6 +28,8 @@ export default function AdminEvaluaciones() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px] flex flex-col gap-3">
         <div className="grid grid-cols-[100px_1fr_1.2fr_140px_90px_90px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Tipo</span>
           <span>Título</span>
@@ -68,6 +70,8 @@ export default function AdminEvaluaciones() {
             {i < tareas.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
     </div>
   )

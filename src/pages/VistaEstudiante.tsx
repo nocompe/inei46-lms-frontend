@@ -104,7 +104,7 @@ export default function VistaEstudiante() {
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         <Stat
           icon={Trophy}
           bg="#FEE2E2"
@@ -136,7 +136,7 @@ export default function VistaEstudiante() {
         />
       </div>
 
-      <div className="grid grid-cols-[1fr_320px] gap-3.5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3.5">
         <div className="flex flex-col gap-3.5">
           <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
             <div className="flex items-center justify-between">
@@ -152,7 +152,7 @@ export default function VistaEstudiante() {
               </div>
             )}
             {cursos.length > 0 && (
-              <div className="grid grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 gap-2.5 xl:grid-cols-4">
                 {cursos.slice(0, 8).map((c, i) => {
                   const color = COLORES_CURSO[i % COLORES_CURSO.length]
                   return (

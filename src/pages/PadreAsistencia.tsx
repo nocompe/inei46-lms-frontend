@@ -32,7 +32,7 @@ export default function PadreAsistencia() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Asistencia</h1>
           <p className="text-sm text-gray-600">Registro completo de asistencia</p>
@@ -48,7 +48,7 @@ export default function PadreAsistencia() {
 
       {hijoSel && resumen && (
         <>
-          <div className="grid grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
             <Box label="Asistencia general" value={resumen.porcentaje != null ? `${resumen.porcentaje}%` : '—'} color="#15803D" />
             <Box label="Presentes" value={String(resumen.presentes)} color="#15803D" />
             <Box label="Tardes" value={String(resumen.tardes)} color="#92400E" />
@@ -57,6 +57,8 @@ export default function PadreAsistencia() {
 
           <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
             <h2 className="text-sm font-bold text-[#1A1A1A]">Historial</h2>
+            <div className="overflow-x-auto">
+            <div className="min-w-[600px] flex flex-col gap-3">
             <div className="grid grid-cols-[120px_1.5fr_120px_1fr] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
               <span>Fecha</span><span>Curso</span><span>Estado</span><span>Observación</span>
             </div>
@@ -72,6 +74,8 @@ export default function PadreAsistencia() {
                 {i < items.length - 1 && <div className="h-px bg-border-softer" />}
               </div>
             ))}
+            </div>
+            </div>
           </div>
         </>
       )}

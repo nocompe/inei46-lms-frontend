@@ -27,7 +27,7 @@ export default function AdminDocentes() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Docentes</h1>
           <p className="text-sm text-gray-600">
@@ -43,8 +43,8 @@ export default function AdminDocentes() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input
               value={q}
@@ -56,6 +56,8 @@ export default function AdminDocentes() {
           <span className="text-[11px] text-gray-400">{filtered.length} resultado(s)</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[600px] flex flex-col gap-3">
         <div className="grid grid-cols-[60px_140px_1fr_140px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Foto</span>
           <span>DNI</span>
@@ -88,6 +90,8 @@ export default function AdminDocentes() {
             {i < filtered.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {modalOpen && (
@@ -146,7 +150,7 @@ function NuevoDocenteModal({ onClose, onCreated }: { onClose: () => void; onCrea
 
         {err && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{err}</div>}
 
-        <div className="grid grid-cols-[120px_1fr] gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[120px_1fr] gap-3">
           <CampoDocente label="DNI">
             <input required className="input" maxLength={8} value={form.dni} onChange={(e) => setForm({ ...form, dni: e.target.value })} />
           </CampoDocente>
@@ -155,7 +159,7 @@ function NuevoDocenteModal({ onClose, onCreated }: { onClose: () => void; onCrea
           </CampoDocente>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <CampoDocente label="Nombres">
             <input required className="input" maxLength={80} value={form.nombres} onChange={(e) => setForm({ ...form, nombres: e.target.value })} />
           </CampoDocente>
@@ -168,7 +172,7 @@ function NuevoDocenteModal({ onClose, onCreated }: { onClose: () => void; onCrea
           <input className="input" maxLength={20} value={form.telefono} onChange={(e) => setForm({ ...form, telefono: e.target.value })} />
         </CampoDocente>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <CampoDocente label="Contraseña">
             <input required type="password" minLength={8} className="input" placeholder="Mínimo 8 caracteres" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           </CampoDocente>

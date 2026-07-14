@@ -164,14 +164,14 @@ export default function AdminReportes() {
 
       {!loading && (
         <>
-          <div className="grid grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
             <KPI icon={BookOpen} label="Cursos activos" value={`${cursosActivos} / ${cursos.length}`} />
             <KPI icon={GraduationCap} label="Docentes" value={String(docentes.length)} />
             <KPI icon={GraduationCap} label="Estudiantes" value={String(estudiantes.length)} />
             <KPI icon={ClipboardList} label="Tareas publicadas" value={`${tareasPublicadas} / ${tareas.length}`} />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
               <h2 className="text-sm font-bold text-[#1A1A1A]">Top cursos por estudiantes</h2>
               {cursos.slice().sort((a, b) => (b.estudiantes ?? 0) - (a.estudiantes ?? 0)).slice(0, 5).map((c) => {
@@ -209,6 +209,8 @@ export default function AdminReportes() {
 
           <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
             <h2 className="text-sm font-bold text-[#1A1A1A]">Tareas recientes</h2>
+            <div className="overflow-x-auto">
+            <div className="min-w-[600px] flex flex-col gap-3">
             <div className="grid grid-cols-[1.5fr_1fr_100px_100px] gap-3 h-9 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
               <span>Título</span><span>Curso</span><span>Puntaje</span><span>Estado</span>
             </div>
@@ -224,11 +226,13 @@ export default function AdminReportes() {
               </div>
             ))}
             {tareas.length === 0 && <div className="py-6 text-center text-xs text-gray-400"><BarChart3 size={28} className="mx-auto mb-2 text-gray-300" />Sin tareas registradas.</div>}
+            </div>
+            </div>
           </div>
 
           <div className="grid gap-4 xl:grid-cols-3">
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Observaciones</h2>
                   <p className="text-[11px] text-gray-400">Filtra por estudiante, docente, tipo o prioridad</p>
@@ -266,7 +270,7 @@ export default function AdminReportes() {
                     <option key={e.id} value={e.id}>{e.nombres} {e.apellidos}</option>
                   ))}
                 </select>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <select className="input text-sm" value={obsFilter.tipo} onChange={(e) => setObsFilter((p) => ({ ...p, tipo: e.target.value }))}>
                     <option value="">Todos los tipos</option>
                     <option value="academica">Académica</option>
@@ -311,7 +315,7 @@ export default function AdminReportes() {
             </div>
 
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Citaciones</h2>
                   <p className="text-[11px] text-gray-400">Filtra por padre, docente, estado o motivo</p>
@@ -349,7 +353,7 @@ export default function AdminReportes() {
                     <option key={e.id} value={e.id}>{e.nombres} {e.apellidos}</option>
                   ))}
                 </select>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <select className="input text-sm" value={citFilter.estado} onChange={(e) => setCitFilter((p) => ({ ...p, estado: e.target.value }))}>
                     <option value="">Todos los estados</option>
                     <option value="pendiente">Pendiente</option>
@@ -389,7 +393,7 @@ export default function AdminReportes() {
             </div>
 
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Pagos</h2>
                   <p className="text-[11px] text-gray-400">Filtra por estudiante, estado o concepto</p>
@@ -465,7 +469,7 @@ export default function AdminReportes() {
               <h2 className="text-sm font-bold text-[#1A1A1A]">Generar reportes en PDF</h2>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Reporte 02 — Boleta de notas */}
               <div className="border border-border-soft rounded-xl p-4 flex flex-col gap-3">
                 <div>
@@ -494,7 +498,7 @@ export default function AdminReportes() {
                   <h3 className="text-xs font-bold text-[#1A1A1A]">Nómina de matriculados</h3>
                   <p className="text-[11px] text-gray-400">Estudiantes matriculados por grado y sección</p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <input className="input text-sm" placeholder="Grado (ej. 3ro)" value={repGrado} onChange={(e) => setRepGrado(e.target.value)} />
                   <input className="input text-sm" placeholder="Sección (ej. A)" value={repSeccion} onChange={(e) => setRepSeccion(e.target.value)} />
                 </div>

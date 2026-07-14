@@ -96,7 +96,7 @@ export default function EstudianteCursoDetalle() {
 
       {!loading && data && (
         <>
-          <div className="bg-gradient-to-r from-inei-600 to-inei-700 rounded-2xl p-6 text-white flex items-center gap-5">
+          <div className="bg-gradient-to-r from-inei-600 to-inei-700 rounded-2xl p-6 text-white flex flex-col sm:flex-row sm:items-center gap-5">
             <div className="h-16 w-16 rounded-2xl bg-white/20 grid place-items-center text-3xl font-bold">
               {data.curso.nombre.charAt(0)}
             </div>
@@ -215,7 +215,7 @@ export default function EstudianteCursoDetalle() {
           {data.recientes && data.recientes.length > 0 && (
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
               <h2 className="text-sm font-bold text-[#1A1A1A]">Material reciente</h2>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 {data.recientes.slice(0, 6).map((r) => {
                   const Icon = tipoIcon[r.tipo]
                   const color = tipoColor[r.tipo]
@@ -273,13 +273,13 @@ function MaterialModal({ contenido, onClose }: { contenido: ContenidoItem; onClo
         {/* Cabecera: título + descripción del docente */}
         <div className="p-5 pb-4 border-b border-border-softer flex flex-col gap-2">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <div className="h-11 w-11 rounded-xl grid place-items-center shrink-0" style={{ background: color.bg }}>
                 <Icon size={20} style={{ color: color.text }} />
               </div>
-              <div className="flex flex-col leading-tight">
-                <h2 className="text-base font-bold text-[#1A1A1A]">{contenido.titulo}</h2>
-                <div className="flex items-center gap-2 text-[10px] text-gray-400">
+              <div className="flex flex-col leading-tight min-w-0">
+                <h2 className="text-base font-bold text-[#1A1A1A] truncate">{contenido.titulo}</h2>
+                <div className="flex flex-wrap items-center gap-2 text-[10px] text-gray-400">
                   <span className="h-5 px-2 rounded-full font-bold inline-flex items-center" style={{ background: color.bg, color: color.text }}>
                     {tipoLabels[contenido.tipo].toUpperCase()}
                   </span>

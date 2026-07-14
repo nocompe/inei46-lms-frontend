@@ -124,14 +124,14 @@ export default function AdminDashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         <Card icon={BookOpen} label="Cursos" value={loading ? '—' : String(data?.totales.cursos ?? 0)} />
         <Card icon={CircleCheck} label="Cursos activos" value={loading ? '—' : String(data?.totales.activos ?? 0)} />
         <Card icon={GraduationCap} label="Estudiantes" value={loading ? '—' : String(estudiantes.length)} />
         <Card icon={Users} label="Docentes" value={loading ? '—' : String(docentes.length)} highlight />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-[#1A1A1A]">Cursos más activos</h2>
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
               ))}
             </select>
           </Field>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Field label="Tipo">
               <select className="input" value={obsForm.tipo} onChange={(e) => setObsForm((prev) => ({ ...prev, tipo: e.target.value }))}>
                 <option value="academica">Academica</option>
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
           <Field label="Motivo">
             <textarea className="input h-24 py-2" placeholder="Motivo de la citacion" value={citaForm.motivo} onChange={(e) => setCitaForm((prev) => ({ ...prev, motivo: e.target.value }))} />
           </Field>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Field label="Fecha">
               <input type="date" className="input" value={citaForm.fecha} onChange={(e) => setCitaForm((prev) => ({ ...prev, fecha: e.target.value }))} />
             </Field>
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
           <Field label="Concepto">
             <input className="input" placeholder="Mensualidad, matricula" value={pagoForm.concepto} onChange={(e) => setPagoForm((prev) => ({ ...prev, concepto: e.target.value }))} />
           </Field>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Field label="Monto">
               <input type="number" min="0" step="0.01" className="input" value={pagoForm.monto} onChange={(e) => setPagoForm((prev) => ({ ...prev, monto: e.target.value }))} />
             </Field>

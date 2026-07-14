@@ -34,8 +34,8 @@ export default function DocenteEstudiantes() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input
               value={q}
@@ -47,6 +47,8 @@ export default function DocenteEstudiantes() {
           <span className="text-[11px] text-gray-400">{filtered.length} resultado(s)</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[720px] flex flex-col gap-3">
         <div className="grid grid-cols-[60px_130px_1fr_1.2fr_90px_70px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Foto</span>
           <span>DNI</span>
@@ -81,6 +83,8 @@ export default function DocenteEstudiantes() {
             {i < filtered.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
     </div>
   )

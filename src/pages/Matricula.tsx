@@ -124,7 +124,7 @@ export default function Matricula() {
         </p>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         <Stat icon={ClipboardList} label="Total Matrículas" value={String(total)} footer="Registradas este año" color="#1A1A1A" />
         <Stat icon={CircleCheck} label="Matrículas Activas" value={String(activas)} footer={`${total > 0 ? Math.round((activas / total) * 100) : 0}% del total`} color="#15803D" />
         <Stat icon={Plus} label="Nuevas este mes" value={String(esteMes)} footer="Este mes" color="#C8102E" />
@@ -152,7 +152,7 @@ export default function Matricula() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <FormCard icon={User} title="Buscar estudiante" subtitle="Ingresa el DNI del estudiante a matricular">
           <Field label="DNI del estudiante">
             <div className="flex gap-2">
@@ -178,7 +178,7 @@ export default function Matricula() {
             </div>
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Nombres">
               <input className="input bg-white" readOnly value={estudiante?.nombres ?? ''} placeholder="—" />
             </Field>
@@ -187,7 +187,7 @@ export default function Matricula() {
             </Field>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Grado">
               <input className="input bg-white" readOnly value={estudiante?.grado ?? ''} placeholder="—" />
             </Field>
@@ -278,7 +278,8 @@ export default function Matricula() {
             {verTodas ? 'Ver menos' : `Ver todas (${total})`}
           </button>
         </div>
-        <div>
+        <div className="overflow-x-auto">
+        <div className="min-w-[760px]">
           <div className="grid grid-cols-[2fr_1fr_1fr_120px_100px_100px] gap-3 h-9 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
             <span>Estudiante</span>
             <span>Curso</span>
@@ -345,6 +346,7 @@ export default function Matricula() {
             </div>
           ))}
         </div>
+        </div>
       </div>
 
       {editandoMatricula && (
@@ -359,8 +361,8 @@ export default function Matricula() {
         <VerMatriculaModal matricula={viendoMatricula} onClose={() => setViendoMatricula(null)} />
       )}
 
-      <div className="bg-white rounded-2xl py-4 px-5 flex items-center justify-between">
-        <div className="flex items-center gap-6">
+      <div className="bg-white rounded-2xl py-4 px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-4 lg:gap-6">
           <Summary label="Estudiante" value={estudiante ? `${estudiante.nombres} ${estudiante.apellidos}` : '—'} />
           <span className="h-8 w-px bg-border-soft" />
           <Summary label="Grado y sección" value={estudiante ? `${estudiante.grado ?? '?'} - ${estudiante.seccion ?? '?'}` : '—'} />
@@ -449,7 +451,7 @@ function Summary({
 function VerMatriculaModal({ matricula, onClose }: { matricula: MatriculaListItem; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm grid place-items-center p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex flex-col leading-tight">
             <h2 className="text-lg font-bold text-[#1A1A1A]">Detalle de matrícula</h2>
@@ -531,7 +533,7 @@ function EditarMatriculaModal({
             setSaving(false)
           }
         }}
-        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4"
+        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <div className="flex flex-col leading-tight">

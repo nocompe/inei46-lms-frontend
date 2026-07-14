@@ -67,7 +67,7 @@ export default function AdminSolicitudesMatricula() {
 
       {error && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         <Stat icon={Clock} label="Pendientes" value={contadores.pendiente} color="#92400E" active={tab === 'pendiente'} onClick={() => setTab('pendiente')} />
         <Stat icon={FileWarning} label="Observadas" value={contadores.observada} color="#C8102E" active={tab === 'observada'} onClick={() => setTab('observada')} />
         <Stat icon={CheckCircle2} label="Aprobadas" value={contadores.aprobada} color="#15803D" active={tab === 'aprobada'} onClick={() => setTab('aprobada')} />
@@ -75,8 +75,8 @@ export default function AdminSolicitudesMatricula() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input
               value={search} onChange={(e) => setSearch(e.target.value)}
@@ -87,6 +87,8 @@ export default function AdminSolicitudesMatricula() {
           <span className="text-[11px] text-gray-400">{filtradas.length} solicitud(es) {tab}</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[900px] flex flex-col gap-3">
         <div className="grid grid-cols-[2fr_2fr_120px_120px_120px_100px_120px] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Estudiante</span><span>Padre/madre</span><span>Grado</span><span>Documentos</span><span>Fecha</span><span>Estado</span><span>Acción</span>
         </div>
@@ -129,6 +131,8 @@ export default function AdminSolicitudesMatricula() {
             {i < filtradas.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {detalle && (
@@ -199,7 +203,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
   if (resultado) {
     return (
       <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" onClick={onClose}>
-        <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4">
+        <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
           <div className="flex flex-col items-center gap-3 py-4">
             <div className="h-16 w-16 rounded-full bg-[#DCFCE7] grid place-items-center">
               <CheckCircle2 size={32} className="text-[#15803D]" />
@@ -252,7 +256,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-surface-muted rounded-xl p-4 flex flex-col gap-2 text-[12px]">
             <span className="text-[10px] font-bold uppercase text-gray-400">Estudiante propuesto</span>
             <Resumen label="DNI" value={solicitud.estudiante.dni} />
@@ -286,7 +290,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-bold text-[#1A1A1A]">Documentos adjuntos ({solicitud.documentos.length})</h3>
           {solicitud.documentos.length === 0 && <p className="text-xs text-gray-400">Sin documentos.</p>}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {solicitud.documentos.map((d) => (
               <a
                 key={d.id}
@@ -305,7 +309,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
         </div>
 
         {solicitud.estado !== 'aprobada' && solicitud.estado !== 'rechazada' && !accion && (
-          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-softer">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-border-softer">
             <button onClick={() => setAccion('aprobar')} className="h-11 rounded-lg bg-[#15803D] hover:bg-[#166534] text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5">
               <Check size={14} /> Aprobar
             </button>
@@ -321,7 +325,7 @@ function RevisionModal({ solicitud, revisorId, onClose, onResolved }: { solicitu
         {accion === 'aprobar' && (
           <div className="flex flex-col gap-3 pt-3 border-t border-border-softer">
             <h3 className="text-sm font-bold text-[#15803D]">Aprobar matrícula</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Grado asignado">
                 <select className="input" value={grado} onChange={(e) => setGrado(e.target.value)}>
                   {['1ro', '2do', '3ro', '4to', '5to'].map((g) => <option key={g} value={g}>{g}</option>)}

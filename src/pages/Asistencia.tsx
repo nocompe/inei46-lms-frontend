@@ -138,7 +138,7 @@ export default function Asistencia() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Toma de asistencia</h1>
           <p className="text-sm text-gray-600">
@@ -162,7 +162,7 @@ export default function Asistencia() {
       )}
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-        <div className="grid grid-cols-[1fr_220px_auto] gap-3 items-end">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px_auto] gap-3 items-end">
           <Field label="Curso">
             <div className="relative">
               <select
@@ -200,8 +200,8 @@ export default function Asistencia() {
           </button>
         </div>
 
-        <div className="flex items-center justify-between border-t border-border-softer pt-4">
-          <div className="flex items-center gap-3 text-xs text-gray-600">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 border-t border-border-softer pt-4">
+          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600">
             <span><strong className="text-[#1A1A1A]">{items.length}</strong> estudiantes</span>
             {ESTADOS.map((e) => (
               <span key={e.id} className="inline-flex items-center gap-1.5">
@@ -210,7 +210,7 @@ export default function Asistencia() {
               </span>
             ))}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] text-gray-400">Marcar todos:</span>
             {ESTADOS.map((e) => (
               <button
@@ -225,7 +225,8 @@ export default function Asistencia() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-0">
+        <div className="overflow-x-auto">
+        <div className="min-w-[860px] flex flex-col gap-0">
           <div className="grid grid-cols-[80px_1fr_400px_1fr] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
             <span>DNI</span>
             <span>Estudiante</span>
@@ -283,6 +284,7 @@ export default function Asistencia() {
               </div>
             )
           })}
+        </div>
         </div>
       </div>
     </div>

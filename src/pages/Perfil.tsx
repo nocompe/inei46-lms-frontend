@@ -123,7 +123,7 @@ export default function Perfil() {
       )}
 
       {!loading && perfil && (
-        <div className="grid grid-cols-[320px_1fr] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4">
           {/* Card de identidad (no editable) */}
           <div className="bg-white rounded-2xl p-6 flex flex-col items-center gap-4 h-fit">
             <div className="h-24 w-24 rounded-full bg-inei-600 grid place-items-center text-white text-3xl font-bold">
@@ -155,7 +155,7 @@ export default function Perfil() {
           {/* Form de edición */}
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 flex flex-col gap-5">
             <Section title="Datos personales" subtitle="Información visible para docentes y otros usuarios">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Nombres">
                   <input
                     required
@@ -202,7 +202,7 @@ export default function Perfil() {
 
             {perfil.rol === 'estudiante' && (
               <Section title="Información académica" subtitle="Grado y sección actuales">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Grado">
                     <select
                       className="input"
@@ -244,7 +244,7 @@ export default function Perfil() {
               }
             >
               {showPwdSection && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="Nueva contraseña">
                     <input
                       type="password"

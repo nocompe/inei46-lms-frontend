@@ -40,8 +40,8 @@ export default function DashboardLayout() {
         items={adminNav}
       />
       <main className="flex-1 overflow-auto">
-        <div className="px-8 py-6 flex flex-col gap-5">
-          <div className="flex items-center justify-between">
+        <div className="px-4 md:px-8 py-6 flex flex-col gap-5">
+          <div className="flex items-center justify-between pl-12 lg:pl-0">
             <div className="flex items-center gap-1.5 text-xs">
               <span className="text-gray-400">Inicio</span>
               <span className="text-gray-400">/</span>

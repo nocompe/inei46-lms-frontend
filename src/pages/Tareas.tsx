@@ -41,7 +41,7 @@ export default function Tareas() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Tareas y evaluaciones</h1>
           <p className="text-sm text-gray-600">
@@ -63,6 +63,8 @@ export default function Tareas() {
       )}
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
+        <div className="overflow-x-auto">
+        <div className="min-w-[860px] flex flex-col gap-3">
         <div className="grid grid-cols-[100px_1fr_1.2fr_140px_90px_90px_70px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Tipo</span>
           <span>Título</span>
@@ -123,6 +125,8 @@ export default function Tareas() {
             {i < tareas.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
 
       {modalOpen && (
@@ -266,7 +270,7 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
           </select>
         </Field>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Tipo">
             <select
               className="input"
@@ -392,7 +396,7 @@ function NuevaTareaModal({ editing, onClose, onCreated }: { editing: TareaDTO | 
               </div>
               {p.tipo === 'opcion_multiple' && (
                 <>
-                  <div className="grid grid-cols-2 gap-1.5 pl-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pl-3">
                     {(p.opciones ?? ['', '', '', '']).map((op, oi) => (
                       <input
                         key={oi}

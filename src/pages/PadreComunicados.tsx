@@ -32,7 +32,7 @@ export default function PadreComunicados() {
         <p className="text-sm text-gray-600">Mensajes recibidos del colegio y docentes</p>
       </div>
 
-      <div className="grid grid-cols-[1fr_1.4fr] gap-3.5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-3.5">
         <div className="bg-white rounded-2xl p-3 flex flex-col gap-1.5">
           {loading && <div className="py-8 text-center text-xs text-gray-400">Cargando...</div>}
           {!loading && mensajes.length === 0 && (

@@ -95,7 +95,7 @@ export default function Cursos() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Gestión de Cursos</h1>
           <p className="text-sm text-gray-600">Administra los cursos del periodo académico 2026 - I</p>
@@ -114,7 +114,7 @@ export default function Cursos() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         <StatCard label="Total de cursos" value={String(totales?.cursos ?? '—')} footer="Registrados en el sistema" icon={BookOpen} />
         <StatCard label="Cursos activos" value={String(totales?.activos ?? '—')} footer="Con dictado en curso" icon={CircleCheck} />
         <StatCard
@@ -127,9 +127,9 @@ export default function Cursos() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <h2 className="text-sm font-bold text-[#1A1A1A]">Listado de cursos</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <FilterSelect
               prefix="Docente"
               value={filtroDocente}
@@ -160,7 +160,8 @@ export default function Cursos() {
           </div>
         </div>
 
-        <div>
+        <div className="overflow-x-auto">
+        <div className="min-w-[860px]">
           <div className="grid grid-cols-[1fr_1.4fr_1.2fr_0.8fr_1fr_0.8fr_90px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
             <span>Código</span>
             <span>Curso</span>
@@ -231,6 +232,7 @@ export default function Cursos() {
               </div>
             )
           })}
+        </div>
         </div>
       </div>
 
@@ -318,7 +320,7 @@ function DetalleCursoModal({ curso, onClose }: { curso: CursoDTO; onClose: () =>
           <button onClick={onClose} className="text-white/80 hover:text-white"><X size={20} /></button>
         </div>
 
-        <div className="border-b border-border-soft flex gap-1 px-4">
+        <div className="border-b border-border-soft flex gap-1 px-4 overflow-x-auto">
           <Tab active={tab === 'info'} onClick={() => setTab('info')} icon={BookOpen} label="Información" />
           <Tab active={tab === 'contenido'} onClick={() => setTab('contenido')} icon={FileText} label={`Material (${contenido?.unidades.length ?? 0})`} />
           <Tab active={tab === 'tareas'} onClick={() => setTab('tareas')} icon={ClipboardList} label={`Tareas (${tareas.length})`} />
@@ -330,7 +332,7 @@ function DetalleCursoModal({ curso, onClose }: { curso: CursoDTO; onClose: () =>
           {loading && <div className="py-10 text-center text-xs text-gray-400">Cargando...</div>}
 
           {!loading && tab === 'info' && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <InfoCard icon={GraduationCap} label="Docente asignado" value={curso.docente} />
               <InfoCard icon={UsersIcon} label="Grado · Sección" value={`${curso.grado} - ${curso.seccion}`} />
               <InfoCard icon={UsersIcon} label="Estudiantes matriculados" value={`${curso.estudiantes}`} />
@@ -565,7 +567,7 @@ function NuevoCursoModal({ editing, onClose, onCreated }: { editing: CursoDTO | 
             setSaving(false)
           }
         }}
-        className="bg-white rounded-2xl w-full max-w-lg p-6 flex flex-col gap-4"
+        className="bg-white rounded-2xl w-full max-w-lg p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1A1A1A]">{isEdit ? 'Editar curso' : 'Nuevo curso'}</h2>
@@ -580,7 +582,7 @@ function NuevoCursoModal({ editing, onClose, onCreated }: { editing: CursoDTO | 
           </div>
         )}
 
-        <div className="grid grid-cols-[1fr_2fr] gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-3">
           <Field label="Código">
             <input
               required
@@ -614,7 +616,7 @@ function NuevoCursoModal({ editing, onClose, onCreated }: { editing: CursoDTO | 
           />
         </Field>
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Field label="Grado">
             <select
               className="input"

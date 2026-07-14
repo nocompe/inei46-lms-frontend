@@ -52,7 +52,7 @@ export default function VistaProfesor() {
       )}
 
       {/* Banner del curso activo */}
-      <div className="bg-inei-600 rounded-2xl p-6 flex items-center justify-between text-white">
+      <div className="bg-inei-600 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-white">
         <div className="flex flex-col gap-1.5">
           <div className="text-[11px] font-semibold text-white/80 flex items-center gap-2">
             <span className="px-2 py-0.5 rounded bg-white/15">
@@ -66,7 +66,7 @@ export default function VistaProfesor() {
               : 'Aún no tienes cursos asignados'}
           </p>
         </div>
-        <div className="flex gap-2.5">
+        <div className="flex flex-wrap gap-2.5">
           <button
             onClick={() => navigate('/docente/contenido')}
             className="h-10 px-3.5 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-semibold inline-flex items-center gap-1.5"
@@ -83,7 +83,7 @@ export default function VistaProfesor() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-3.5">
+      <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
         <StatCard icon={FileText} label="Mis cursos" value={loading ? '—' : String(resumen?.cursos ?? cursos.length)} />
         <StatCard icon={Users} label="Estudiantes" value={loading ? '—' : String(resumen?.estudiantes ?? '0')} />
         <StatCard icon={TrendingUp} label="Tareas activas" value={loading ? '—' : String(resumen?.tareas ?? tareas.length)} />
@@ -95,7 +95,7 @@ export default function VistaProfesor() {
         />
       </div>
 
-      <div className="grid grid-cols-[1fr_340px] gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-4">
         {/* Tareas por revisar */}
         <div className="bg-white rounded-2xl p-5 flex flex-col gap-3.5">
           <div className="flex items-center justify-between">

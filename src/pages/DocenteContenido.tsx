@@ -104,7 +104,7 @@ export default function DocenteContenido() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Contenido educativo</h1>
           <p className="text-sm text-gray-600">Administración de recursos y unidades académicas</p>
@@ -122,7 +122,7 @@ export default function DocenteContenido() {
         <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>
       )}
 
-      <div className="bg-white rounded-2xl p-4 flex items-center gap-3">
+      <div className="bg-white rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex flex-col gap-1.5 flex-1">
           <label className="text-[10px] font-bold uppercase text-gray-400">Curso</label>
           <select
@@ -139,7 +139,7 @@ export default function DocenteContenido() {
           </select>
         </div>
         {data && (
-          <div className="flex items-center gap-6 px-6">
+          <div className="flex items-center gap-6 sm:px-6">
             <Stat label="Unidades" value={String(data.unidades.length)} />
             <Stat label="Temas" value={String(data.unidades.reduce((a, u) => a + u.temas, 0))} />
             <Stat label="Recursos" value={String(data.unidades.reduce((a, u) => a + u.contenidos.reduce((b, c) => b + c.recursos, 0), 0))} />
@@ -199,7 +199,9 @@ export default function DocenteContenido() {
               </div>
 
               {expanded && (
-                <div className="border-t border-border-softer px-5 py-4 flex flex-col gap-1">
+                <div className="border-t border-border-softer px-5 py-4">
+                  <div className="overflow-x-auto">
+                  <div className="min-w-[600px] flex flex-col gap-1">
                   <div className="grid grid-cols-[1fr_140px_100px_100px] gap-3 h-9 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
                     <span>Tema</span>
                     <span>Tipo</span>
@@ -257,6 +259,8 @@ export default function DocenteContenido() {
                   >
                     <Plus size={12} /> Agregar tema
                   </button>
+                  </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -272,7 +276,7 @@ export default function DocenteContenido() {
               <p className="text-[11px] text-gray-400">Últimos archivos y materiales subidos</p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
             {data.recientes.slice(0, 6).map((r) => {
               const Icon = tipoIcon[r.tipo]
               const color = tipoColor[r.tipo]
@@ -370,7 +374,7 @@ function UnidadModal({
             setSaving(false)
           }
         }}
-        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4"
+        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1A1A1A]">Nueva unidad</h2>
@@ -482,7 +486,7 @@ function ContenidoModal({
           <label className="text-xs font-semibold text-gray-600">Título</label>
           <input required className="input" placeholder="3.1 Concepto de fracción" maxLength={160} value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600">Tipo</label>
             <select className="input" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as ContenidoTipo })}>
@@ -607,7 +611,7 @@ function UnidadEditModal({
             setSaving(false)
           }
         }}
-        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4"
+        className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
       >
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1A1A1A]">Editar unidad</h2>
@@ -712,7 +716,7 @@ function ContenidoEditModal({
           <label className="text-xs font-semibold text-gray-600">Título</label>
           <input required className="input" maxLength={160} value={form.titulo} onChange={(e) => setForm({ ...form, titulo: e.target.value })} />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-600">Tipo</label>
             <select className="input" value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value as ContenidoTipo })}>

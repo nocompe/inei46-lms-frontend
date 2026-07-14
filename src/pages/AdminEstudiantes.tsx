@@ -24,7 +24,7 @@ export default function AdminEstudiantes() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Estudiantes</h1>
           <p className="text-sm text-gray-600">
@@ -40,8 +40,8 @@ export default function AdminEstudiantes() {
       </div>
 
       <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 h-9 w-72 px-3 rounded-lg bg-surface-muted">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 h-9 w-full max-w-72 px-3 rounded-lg bg-surface-muted">
             <Search size={14} className="text-gray-400" />
             <input
               value={q}
@@ -55,6 +55,8 @@ export default function AdminEstudiantes() {
           </span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[720px] flex flex-col gap-3">
         <div className="grid grid-cols-[60px_140px_1fr_120px_120px_120px] gap-3 h-10 px-3.5 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
           <span>Foto</span>
           <span>DNI</span>
@@ -91,6 +93,8 @@ export default function AdminEstudiantes() {
             {i < filtered.length - 1 && <div className="h-px bg-border-softer" />}
           </div>
         ))}
+        </div>
+        </div>
       </div>
     </div>
   )

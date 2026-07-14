@@ -74,7 +74,7 @@ export default function PadrePagos() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Pagos y pensiones</h1>
           <p className="text-sm text-gray-600">
@@ -110,7 +110,7 @@ export default function PadrePagos() {
 
       {!loadingHijos && hijoSel && (
         <>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             <ResumenCard icon={CheckCircle2} bg="#DCFCE7" iconColor="#15803D" label="Total pagado" value={`S/. ${Number(resumen.total_pagado).toFixed(2)}`} />
             <ResumenCard icon={AlertCircle} bg="#FEF3C7" iconColor="#92400E" label="Pendiente" value={`S/. ${Number(resumen.total_pendiente).toFixed(2)}`} />
             <ResumenCard icon={CreditCard} bg="#FEE2E2" iconColor="#C8102E" label="Próximo vencimiento" value={resumen.siguiente_vencimiento ? new Date(resumen.siguiente_vencimiento).toLocaleDateString('es-PE') : '—'} />
@@ -121,6 +121,8 @@ export default function PadrePagos() {
               <h2 className="text-sm font-bold text-[#1A1A1A]">Historial de pagos</h2>
               <button onClick={() => setModalOpen(true)} className="text-[11px] font-semibold text-inei-600 inline-flex items-center gap-1"><Plus size={12} /> Registrar pago</button>
             </div>
+            <div className="overflow-x-auto">
+            <div className="min-w-[800px] flex flex-col gap-3">
             <div className="grid grid-cols-[1.5fr_120px_120px_120px_100px_140px] gap-3 h-10 px-3 bg-surface-muted rounded-lg items-center text-[10px] font-bold text-gray-400 uppercase">
               <span>Concepto</span><span>Monto</span><span>Vencimiento</span><span>Fecha pago</span><span>Estado</span><span>Acciones</span>
             </div>
@@ -156,6 +158,8 @@ export default function PadrePagos() {
                 {i < pagos.length - 1 && <div className="h-px bg-border-softer" />}
               </div>
             ))}
+            </div>
+            </div>
           </div>
         </>
       )}
@@ -228,7 +232,7 @@ function CheckoutModal({ pago, onClose, onCompleted }: { pago: PagoDTO; onClose:
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4">
+      <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <div className="flex flex-col leading-tight">
             <h2 className="text-lg font-bold text-[#1A1A1A]">Pasarela de pago</h2>
@@ -325,7 +329,7 @@ function PagoModal({ estudianteId, onClose, onCreated }: { estudianteId: number;
   const [saving, setSaving] = useState(false)
   return (
     <div className="fixed inset-0 z-50 bg-black/40 grid place-items-center p-4" onClick={onClose}>
-      <form onClick={(e) => e.stopPropagation()} onSubmit={async (e) => { e.preventDefault(); setSaving(true); await api.crearPago({ id_estudiante: estudianteId, ...form }); onCreated() }} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-3">
+      <form onClick={(e) => e.stopPropagation()} onSubmit={async (e) => { e.preventDefault(); setSaving(true); await api.crearPago({ id_estudiante: estudianteId, ...form }); onCreated() }} className="bg-white rounded-2xl w-full max-w-md p-6 flex flex-col gap-3 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-[#1A1A1A]">Registrar pago</h2>
           <button type="button" onClick={onClose}><X size={18} className="text-gray-400" /></button>

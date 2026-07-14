@@ -110,7 +110,7 @@ export default function VistaPadre() {
 
       {hijoSel && (
         <>
-          <div className="bg-white rounded-2xl p-5 flex items-center justify-between">
+          <div className="bg-white rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-full bg-inei-600 grid place-items-center text-white text-lg font-bold">
                 {hijoSel.nombres.charAt(0)}
@@ -129,7 +129,7 @@ export default function VistaPadre() {
                 </span>
               </div>
             </div>
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap gap-2.5">
               {hijos.length > 1 && (
                 <select
                   className="h-10 px-3.5 rounded-lg bg-surface-muted text-xs font-semibold text-gray-600 border-0 focus:outline-none focus:ring-2 focus:ring-inei-600"
@@ -162,7 +162,7 @@ export default function VistaPadre() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-3.5">
+          <div className="grid grid-cols-2 gap-3.5 xl:grid-cols-4">
             <StatF icon={Trophy} bg="#FEE2E2" iconColor="#C8102E"
               label="Promedio general"
               value={hijoSel.promedio != null ? `${hijoSel.promedio} / 20` : '—'}
@@ -191,7 +191,7 @@ export default function VistaPadre() {
             />
           </div>
 
-          <div className="grid grid-cols-[1fr_320px] gap-3.5">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-3.5">
             <div className="bg-white rounded-2xl p-5 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <div>
@@ -202,7 +202,8 @@ export default function VistaPadre() {
                 </div>
               </div>
 
-              <div>
+              <div className="overflow-x-auto">
+              <div className="min-w-[560px]">
                 <div className="grid grid-cols-[1.2fr_1.5fr_120px_60px] h-9 px-3 bg-surface-muted rounded-lg items-center text-[9px] font-bold text-gray-400 uppercase">
                   <span>Curso</span>
                   <span>Evaluación</span>
@@ -241,6 +242,7 @@ export default function VistaPadre() {
                     </div>
                   )
                 })}
+              </div>
               </div>
             </div>
 

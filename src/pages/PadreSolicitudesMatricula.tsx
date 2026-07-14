@@ -75,7 +75,7 @@ export default function PadreSolicitudesMatricula() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-2xl font-bold text-[#1A1A1A]">Solicitudes de matrícula</h1>
           <p className="text-sm text-gray-600">Solicita la matrícula de tu hijo y haz seguimiento del estado</p>
@@ -87,7 +87,7 @@ export default function PadreSolicitudesMatricula() {
 
       {error && <div className="rounded-lg bg-inei-50 border border-inei-200 px-3 py-2 text-xs text-inei-700">{error}</div>}
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 xl:gap-4">
         <Stat icon={Clock} label="Pendientes" value={stats.pendiente} color="#92400E" />
         <Stat icon={FileWarning} label="Observadas" value={stats.observada} color="#C8102E" />
         <Stat icon={CheckCircle2} label="Aprobadas" value={stats.aprobada} color="#15803D" />
@@ -248,7 +248,7 @@ function WizardModal({ padreId, onClose, onCreated }: { padreId: number; onClose
         {paso === 1 && (
           <div className="flex flex-col gap-3">
             <span className="text-[11px] font-bold uppercase text-gray-400 -mb-1">Identificación del estudiante</span>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="DNI del estudiante *">
                 <input
                   required maxLength={8}
@@ -266,7 +266,7 @@ function WizardModal({ padreId, onClose, onCreated }: { padreId: number; onClose
                 />
               </Field>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Nombres *">
                 <input required maxLength={80} value={form.estudiante_nombres} onChange={(e) => setForm({ ...form, estudiante_nombres: e.target.value })} className="input" />
               </Field>
@@ -284,7 +284,7 @@ function WizardModal({ padreId, onClose, onCreated }: { padreId: number; onClose
             </Field>
 
             <span className="text-[11px] font-bold uppercase text-gray-400 mt-2 -mb-1">Información académica</span>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Field label="Género">
                 <select className="input" value={form.estudiante_genero} onChange={(e) => setForm({ ...form, estudiante_genero: e.target.value as 'M' | 'F' })}>
                   <option value="M">Masculino</option>
@@ -313,7 +313,7 @@ function WizardModal({ padreId, onClose, onCreated }: { padreId: number; onClose
             </Field>
 
             <span className="text-[11px] font-bold uppercase text-gray-400 mt-2 -mb-1">Contacto del responsable</span>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Field label="Parentesco *">
                 <select className="input" value={form.parentesco} onChange={(e) => setForm({ ...form, parentesco: e.target.value as Parentesco })}>
                   <option value="padre">Padre</option>
@@ -394,7 +394,7 @@ function WizardModal({ padreId, onClose, onCreated }: { padreId: number; onClose
           <div className="flex flex-col gap-4">
             <div className="bg-surface-muted rounded-xl p-4 flex flex-col gap-2">
               <h3 className="text-sm font-bold text-[#1A1A1A]">Resumen de la solicitud</h3>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[12px]">
                 <Resumen label="DNI" value={form.estudiante_dni} />
                 <Resumen label="Nombres" value={form.estudiante_nombres} />
                 <Resumen label="Apellidos" value={form.estudiante_apellidos} />
@@ -590,7 +590,7 @@ function DetalleModal({ solicitud, onClose, onUpdated }: { solicitud: SolicitudM
           </div>
         )}
 
-        <div className="bg-surface-muted rounded-xl p-4 grid grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
+        <div className="bg-surface-muted rounded-xl p-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-[12px]">
           {solicitud.codigo_matricula && (
             <Resumen label="Código matrícula" value={solicitud.codigo_matricula} />
           )}
